@@ -1,6 +1,16 @@
-# Instructions for installing the server (Ubuntu 22.04)
+# [playquoridor.online](https://playquoridor.online)
 
-## Installation
+<img align="right" src="https://github.com/playquoridor/quoridor/blob/main/logo.png" alt="PlayQuoridor logo" style="width:250px;"/>
+
+Welcome! PlayQuoridor is a free/libre, no-ads, open source Quoridor server powered by volunteers and donations.
+
+PlayQuoridor is under continuous development. Users may be affected by disruptions. Please contact us to report any bugs, propose new features, or if you want to contribute to PlayQuoridor's development.
+
+PlayQuoridor is implemented in Django (Python). We welcome contributions from developers, designers, and testers. Let us build an online Quoridor community together! 
+
+## Instructions for installing the server (Ubuntu 22.04)
+
+### Installation
 Install pip
 ```
 sudo apt install python3-pip
@@ -23,7 +33,7 @@ Install redis-server
 sudo apt install redis-server
 ```
 
-## PostgreSQL database (optional)
+### PostgreSQL database (optional)
 
 Install [PostgreSQL](https://www.postgresql.org/download/linux/ubuntu/)
 ```
@@ -90,7 +100,7 @@ chmod 0600 .my_pgpass
 
 If using PostgreSQL, change the default database in `quoridor/settings.py` (currently commented out).
 
-## Setup database
+### Setup database
 
 Create database
 ```
@@ -98,7 +108,7 @@ python3 manage.py makemigrations game
 python3 manage.py migrate
 ```
 
-## Creating users
+### Creating users
 
 Users can be created as follows:
 ```
@@ -111,7 +121,7 @@ ud = UserDetails(user=user)
 ud.save()
 ```
 
-## Email backend for user registration (optional)
+### Email backend for user registration (optional)
 
 Set up email backend (for sending user activation emails). In `settings.py` modify the following information
 ```
@@ -138,7 +148,7 @@ new_site = Site.objects.create(domain='127.0.0.1:8000', name='127.0.0.1:8000')
 
 The sites can also be managed with a superuser via `https://127.0.0.1:8000/admin/sites/site/`
 
-## Running the server
+### Running the server
 
 Run redis
 ```
