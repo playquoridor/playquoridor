@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        {% block title %}
+            <title>Play Quoridor</title>
+        {% endblock %}
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+              rel="stylesheet"
+              integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+              crossorigin="anonymous">
+
+        <!-- Add additional CSS in static file -->
+        {% load static %}
+        {% load games_tags %}
+        {{ user.get_username|json_script:"username" }}
+
+        <!-- Order is important: https://stackoverflow.com/questions/3066356/multiple-css-classes-properties-overlapping-based-on-the-order-defined -->
+        <link rel="stylesheet" href="{% static 'css/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+        <link rel="stylesheet" href="{% static 'game/css/board.css' %}">
+        <link rel="stylesheet" href="{% static 'profile/css/styles.css' %}">
+        <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    </head>
+    <body>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-1 ps-3 py-1"> <!-- navbar-light bg-light  -->
+            <a class="navbar-brand" href="/">
+                <span style="color: gray">Play</span> Quoridor
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <li class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active px-4">
+                        <a class="nav-link" href="{% url 'index' %}">Home</a> <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item px-4">
+                        <a class="nav-link" href="{% url 'tutorial:introduction' %}">How to play</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <!-- <li class="nav-item"><a class="nav-link" href="{% url 'challenge:challenge' %}">Challenge</a></li> -->
+                    <li class="nav-item px-4">
+                        <a class="nav-link" href="{% url 'profile:show_profile' user.get_username %}">My profile</a>
+                    </li>
+                    <li class="nav-item px-4">
+                        <a class="nav-link" href="{% url 'user:list_games' user.get_username %}">My games</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <ul class="nav navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <div class="nav-link" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="badge bg-info pointer hidden" id="challenges-badge">0</span>
+                            </div>
+                            <div class="dropdown-menu challenges-list" id="challenges-list" aria-labelledby="navbarDropdown">
+                                <!-- <div id="challenges"></div> -->
+                            </div>
+                        </li>
+
+                         <li class="nav-item">
+                             <a class="nav-link" class="user" href="{% url 'profile:show_profile' user.get_username %}">
+                                <span class="white-text">
+                                    <b> {% trim_string user.get_username k=30 %} </b>
+                                </span>
+                             </a>
+                         </li>
+                        <li class="nav-item px-4">
+                            <form method="post" action="{% url 'logout' %}?next={{ request.path }}">
+                                {% csrf_token %}
+                                <button class="nav-link"> Logout </button>
+                            </form>
+                        </li>
+                        {% else %}
+                         <li class="nav-item">
+                             <a class="nav-link" href="{% url 'login' %}?next={{ request.path }}">
+                                 <span class="glyphicon glyphicon-user"></span>Login
+                             </a>
+                         </li>
+                         <li class="nav-item px-4">
+                             <a class="nav-link" href="{% url 'register:register' %}?next={{ request.path }}">
+                                 <span class="glyphicon glyphicon-log-in"></span>
+                                 Sign up
+                             </a>
+                         </li>
+                        {% endif %}
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-2">
+                    {% block leftblock %} {% endblock %}
+                </div>
+
+                <!-- contents -->
+                <div class="col-sm-8 ">
+                    {% include 'include/messages.html' %}
+                    {% block content %}{% endblock %}
+                </div>
+
+                <!-- right panel -->
+                <div class="col-sm-2" id="left-panel">
+                     &nbsp;{% block rightblock %} {% endblock %}
+                </div>
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+            <!-- Hidden form for accepted challenges -->
+            <form action="{% url 'game:join' %}" id="joinChallengeGameForm" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="game_id" name="game_id" value="">
+            </form>
+
+            <script type="module" src="{% static 'challenge/js/receive_challenge.js' %}"></script>
+            <!-- <div class="notification" onclick="document.getElementById('challenges-list').classList.toggle('hidden')">-->
+            <script>
+                // Function to toggle notifications button
+                function toggleNotifications(){
+                    const badge = document.getElementById('challenges-badge');
+                    if (badge.textContent !== '0'){
+                        const button = document.getElementById('challenges-list');
+                        button.classList.toggle('hidden');
+                    }
+                }
+            </script>
+        {% endif %}
+        {% block activegame %}{% endblock %}
+    </body>
+</html>

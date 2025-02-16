@@ -1,0 +1,63 @@
+{% load static %}
+{% load games_tags %}
+
+<div class="sub-container">
+    <div class="title">
+        Leaderboard
+    </div>
+    <div class="leaderboard-container">
+        <input class="input-tab" id="bullet-tab" type="radio" name="tabs">
+        <label class="label-tab" for="bullet-tab">Bullet</label>
+        <input class="input-tab" id="blitz-tab" type="radio" name="tabs" checked>
+        <label class="label-tab" for="blitz-tab">Blitz</label>
+        <input class="input-tab" id="rapid-tab" type="radio" name="tabs">
+        <label class="label-tab" for="rapid-tab">Rapid</label>
+        <input class="input-tab" id="standard-tab" type="radio" name="tabs">
+        <label class="label-tab" for="standard-tab">Standard</label>
+
+        <section class="section-tab" id="bullet-content">
+            {% for r in top_ratings_bullet %}
+                <li class="leaderboard-player">
+                    <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
+                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                    </a>
+                    <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
+                </li>
+            {% endfor %}
+        </section>
+
+        <section class="section-tab" id="blitz-content">
+            {% for r in top_ratings_blitz %}
+                <li class="leaderboard-player">
+                    <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
+                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                    </a>
+                    <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
+                </li>
+            {% endfor %}
+        </section>
+
+        <section class="section-tab" id="rapid-content">
+            {% for r in top_ratings_rapid %}
+                <li class="leaderboard-player">
+                    <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
+                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                    </a>
+                    <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
+                </li>
+            {% endfor %}
+        </section>
+
+        <section class="section-tab" id="blitz-standard">
+            {% for r in top_ratings_standard %}
+                <li class="leaderboard-player">
+                    <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
+                         <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                    </a>
+                    <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
+                </li>
+            {% endfor %}
+        </section>
+
+    </div>
+</div>

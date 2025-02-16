@@ -1,0 +1,43 @@
+{% load static %}
+{% load games_tags %}
+
+<div class="game-description">
+    <div class="player-bar top-borders small-font" id="bar-black-{{ game_id }}">
+        <span class="player-info" id="player-black-{{ game_id }}">
+            <span class="dot black"></span>
+            <span class="white-text">
+                <a class="user">
+                    <b> Black </b>
+                </a>
+            </span>
+            <span id="turn_black-{{ game_id }}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span id="walls_black-{{ game_id }}"> walls </span>
+        </span>
+
+    </div>
+
+    <div id="board-{{ game_id }}" class="board-preview">
+        <script defer src="{% static 'game/js/load_static_board.js' %}"
+                data-fen="{{FEN}}"
+                data-gameid="{{ game_id }}"
+                data-opponentusername="black"
+                data-playercolor="white"
+                data-playerusername="white"
+        ></script> <!--- safely passing arguments to JS --->
+    </div>
+
+    <div class="player-bar bottom-borders small-font" id="bar-white-{{ game_id }}">
+        <span class="player-info" id="player-white-{{ game_id }}">
+            <span class="dot white"></span>
+            <span class="white-text">
+                    <b> White </b>
+            </span>
+            <span id="turn_white-{{ game_id }}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span id="walls_white-{{ game_id }}"> walls </span>
+        </span>
+    </div>
+</div>

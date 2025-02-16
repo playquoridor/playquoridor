@@ -1,0 +1,39 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    {% load static %}
+    <script src="{% static 'challenge/js/send_challenge.js' %}"></script>
+    <!-- Need to return false to avoid refreshing: https://www.codexpedia.com/javascript/submitting-html-form-without-reload-the-page/ -->
+
+    <h3> Send challenge </h3>
+    <form onsubmit="sendChallenge(); return false;" method="post">
+        {% csrf_token %}
+        <div class="box">
+            <fieldset>
+                <!--
+                <div>
+                  <input type="radio" id="random" name="player_color" value="random" checked>
+                  <label for="random">Random</label>
+                </div>
+                -->
+                <div>
+                  <input type="radio" id="white" name="player_color" value="white" checked>
+                  <label for="white">White</label>
+                </div>
+                <div>
+                  <input type="radio" id="black" name="player_color" value="black">
+                  <label for="black">Black</label>
+                </div>
+
+                <label for="challenged_username">Opponent:</label>
+                <input type="text" id="challenged_username" name="challenged_username" value=""><br>
+            </fieldset>
+            <br>
+            <div class="center" id="challenge-box">
+                <!-- <input type="submit" value="Send challenge"> -->
+                <button type="submit" id="challenge-button">Challenge</button>
+            </div>
+            <!-- <input type="submit" value="Send challenge"> -->
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load games_tags %}
+
+{% block content %}
+    <script data-sounddir="{% static 'game/sounds' %}">
+        window.sound_dir = document.currentScript.dataset.sounddir;
+    </script>
+    <script src="{% static 'challenge/js/send_challenge.js' %}"></script>
+
+    {{ game.FEN | json_script:"FEN" }}
+    {{ game.game_id|json_script:"game-id" }}
+    {{ player.username|json_script:"player" }}
+    {{ opponent.username|json_script:"opponent" }}
+    {{ player_color|json_script:"player-color" }}
+    {{ flip_board|json_script:"flip-board" }}
+    {{ time_end|json_script:"time-end" }}
+    {{ game.increment|json_script:"increment" }}
+
+    <div class="container" id="main-container">
+        {% include "game/include/dynamic_game.html" with game=game player=player opponent=opponent time_end=time_end %}
+        <div class="game-sidebar">
+            <div class="game-sidebar-container" id="game-sidebar-container">
+                <!-- Time -->
+                <div class='timer' id='timer-{{opponent.username}}'>
+                    {{game.total_time_per_player}}
+                </div>
+
+                <!-- Game options -->
+                <div id="rematch-box" class="center btn-group-vertical hidden">
+                    <button class="btn btn-secondary" id="rematch-button" onclick="sendRematchChallenge(); return false;">Rematch</button>
+                </div>
+
+                <div class="game-details" id="game-details">
+                    <div class="game-message" id="game-message"> </div>
+                    <div id="draw-box" class="rematch-box hidden" style="display: none;"> </div>
+
+                    <button class="btn btn-secondary" style="display: none; margin-left: 30px;" id="abort-button">Abort</button>
+                    <div class="center hidden" id="game-options-box"> <!-- class="rematch-button btn-group" -->
+                        <button class="btn btn-secondary" id="draw-button">Offer draw</button>
+                        <button class="btn btn-secondary" id="resign-button">Resign</button>
+                    </div>
+
+                    <div class="game-analysis-container hidden" id="game-analysis-container">
+                        <div class="move-list" id="move-list">
+                        </div>
+                        <div class="move-list-buttons-container">
+                            <div class="move-list-button" id="analysis-init">
+                                <<
+                            </div>
+                            <div class="move-list-button" id="analysis-backward">
+                                <
+                            </div>
+                            <div class="move-list-button" id="analysis-forward">
+                                >
+                            </div>
+                            <div class="move-list-button" id="analysis-end">
+                                >>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time -->
+                <div class='timer' id='timer-{{player.username}}'>
+                    {{game.total_time_per_player}}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block activegame %}
+    {% if active_game_exists and game.game_id != active_game.game_id %}
+        {% load static %}
+        {% load games_tags %}
+
+        <div class="active-game-container" id="active-game-container">
+            <div class="game no-margin no-translate" id="game-{{ active_game.game_id }}">
+                <div class="title">
+                    Active game
+                </div>
+                <div class="game-description">
+                    {% include "game/include/static_game.html" with game=active_game player=active_game_player opponent=active_game_opponent %}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Add game links
+            const games = document.getElementsByClassName('game');
+            for (const game of games){
+                game.onclick = function (){
+                    /* Ref: https://stackoverflow.com/questions/11844430/back-button-fails-after-window-location-replacehref */
+                    window.location.href = "http://" + window.location.host + "/game/" + game.id.split('-')[1];
+                }
+                game.classList.add('pointer');
+            }
+        </script>
+    {% endif %}
+{% endblock %}

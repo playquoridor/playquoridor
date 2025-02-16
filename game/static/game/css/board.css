@@ -1,0 +1,322 @@
+div + div {
+  /* 👇  fixed here */
+  backface-visibility: hidden; /* Ref: https://stackoverflow.com/questions/74445090/css-rotated-div-border-shows-odd-outline */
+}
+
+.container{
+    display: flex;
+    /* flex-direction: column; /* Change flex-direction to column for smaller screens */
+    /* align-items: center; /* Center the elements vertically */
+}
+
+.game-sidebar {
+    margin-left: 0px; /* Add some margin between the board and the player box */
+    flex-grow: 1; /* Make the player box use all the available space */
+    /* flex-shrink: 0; */
+    /* width: 100%; */
+    width: 30vw;
+    padding: 20px;
+    /* background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    text-align: center; */
+}
+
+.game-sidebar-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.player-name {
+    padding: 10px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.active_turn { /* .player-name */
+    background-color: #67a4dd; /* background-color: #3482c6; */
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+    color: white;
+    /* animation: lds-facebook 1.2s cubic-bezier(0, 1, 1, 0) infinite;*/
+}
+
+.positive-delta {
+    /* color: #0cba0c;*/
+    color: yellowgreen;
+    /* font-style: italic; */
+}
+
+.negative-delta {
+    color: #f1553d;
+    /* font-style: italic; */
+}
+
+@keyframes boldNormalAnimation {
+  0%, 100% {
+    font-weight: normal;
+  }
+  50% {
+    font-weight: bold;
+  }
+}
+
+.animation-text {
+  animation: boldNormalAnimation 2s infinite;
+}
+
+
+.board {
+    display: grid;  /*   display: inline-grid; */
+    grid-template-columns:  repeat(8, minmax(1vw, 16vw) 0.6vw) minmax(1vw, 16vw);  /* repeat(8, minmax(1vw, 16vw) minmax(0.01vw, 0.8vw)) minmax(1vw, 16vw); */
+    grid-template-rows: repeat(8, minmax(1vw, 16vw) 0.6vw) minmax(1vw, 16vw); /* repeat(8, 4vw 0.75vw) 4vw; */
+    /* padding: 0; */
+    /* grid-area: resize; */
+    /* flex-shrink: 1; */
+    /* border: 1px solid #333; */
+    aspect-ratio:1;
+}
+
+.board-preview {
+    display: grid;  /*   display: inline-grid; */
+    grid-template-columns:  repeat(8, minmax(1vw, 16vw) 0.3vw) minmax(1vw, 16vw);  /* repeat(8, minmax(1vw, 16vw) minmax(0.01vw, 0.8vw)) minmax(1vw, 16vw); */
+    grid-template-rows: repeat(8, minmax(1vw, 16vw) 0.3vw) minmax(1vw, 16vw); /* repeat(8, 4vw 0.75vw) 4vw; */
+    aspect-ratio:1;
+}
+
+@media only screen and (max-width: 768px) {
+    .container {
+        /*margin-left: 0px; /* Add some margin between the board and the player box */
+        flex-direction: column; /* Change flex-direction to column for smaller screens */
+        align-items: center; /* Center the elements vertically */
+    }
+
+    .game-sidebar {
+        margin-top: 20px; /* Add some margin between the board and the player box */
+        margin-left: 0px;
+        width: 100%; /* Set the width to 100% for full width on smaller screens */
+        /* flex-shrink: 0; /* Prevent the player box from shrinking */
+    }
+
+    .player-name {
+        /* font-size: 18px; */
+        /* font-weight: bold; */
+        /* min-width: 200px; */
+        margin-left: 20%;
+        margin-right: 20%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+        padding: 10px;
+    }
+    .board {
+        margin: 0;
+        padding: 0;
+        /* fix: minimum width of 0 */
+        /* width: 100%; /* Set the width to 100% for full width on smaller screens */
+        /* flex-shrink: 0; /* Prevent the board from shrinking */
+    }
+}
+
+.rotated{ /* Solution from https://stackoverflow.com/questions/52657209/how-to-properly-rotate-a-section-div-in-a-grid-design */
+    transform: rotate(-180deg) translateX(-100%) translateY(-100%);
+    /* position: fixed; */
+    transform-origin: top left;
+}
+
+.square {
+  /* Style the squares on the board */
+  background-color: #b99976; /*#DEB887;*/
+  border: 1vw black;
+  /* height: 100%; */
+  position: relative;
+}
+
+@keyframes square-blink {
+    0%, 100% {
+        background-color: #b99976;
+    }
+    50% {
+        background-color: #ca2c48;
+    }
+}
+
+.square.highlighted {
+  /* Style the squares on the board */
+    background-color: #ca2c48;
+    animation: square-blink 2s infinite; /* Adjust the duration as needed */
+    transition: background-color 0.5s ease;
+}
+
+/*
+Cursor
+ */
+
+.pointer{
+    cursor: pointer;
+}
+
+/*
+Walls
+ */
+
+@keyframes fence-blink {
+    0%, 100% {
+        background-color: #e5d3b3;
+    }
+    50% {
+        background-color: #ca2c48;
+    }
+}
+
+.vertical-wall {
+  /* Style the walls on the board */
+  background-color: #e5d3b3; /* transparent; */
+  height: 100%;
+  width: 100%;
+  /* cursor: pointer; */
+}
+
+.vertical-wall.highlighted {
+  /* Style the squares on the board */
+    background-color: #ca2c48;
+    animation: fence-blink 2s infinite; /* Adjust the duration as needed */
+    transition: background-color 0.5s ease;
+}
+
+.horizontal-wall {
+  /* Style the walls on the board */
+  background-color: #e5d3b3;  /* transparent; */
+  height: 100%;
+  width: 100%;
+  /* padding-top: 100%; /* This creates a square aspect ratio since the width is set to 100% of its own height */
+  /* cursor: pointer; */
+}
+
+.horizontal-wall.highlighted {
+  /* Style the squares on the board */
+    background-color: #ca2c48;
+    animation: fence-blink 2s infinite; /* Adjust the duration as needed */
+    transition: background-color 0.5s ease;
+}
+
+.wall-center {
+  /* Style the walls on the board */
+  background-color: #e5d3b3;
+  /* height: 100%; */
+  width: 100%;
+    /* padding-top: 100%; /* This creates a square aspect ratio since the width is set to 100% of its own height */
+}
+
+.wall-center.highlighted {
+  /* Style the squares on the board */
+    background-color: #ca2c48;
+    animation: fence-blink 2s infinite; /* Adjust the duration as needed */
+    transition: background-color 0.5s ease;
+}
+
+.subvwall {
+  /* Style the walls on the board */
+  background-color: transparent;
+  height: 50%;
+  width: 100%;
+  /* cursor: pointer; */
+}
+
+.subhwall {
+  /* Style the walls on the board */
+  background-color: transparent;
+  height: 100%;
+  width: 50%;
+  /* cursor: pointer; */
+  float: left;
+}
+
+.pawn {
+  /* Style the pawns on the board */
+  border: 0 solid #333;
+  height: 50%;
+  width: 50%;
+  border-radius: 50%;
+  /* Center vertically and horizontally */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pawn#white-pawn {
+  background-color: lightgray;
+}
+
+.white-pawn {
+  background-color: lightgray;
+}
+
+.pawn#black-pawn {
+  background-color: #000000;
+}
+
+.black-pawn {
+  background-color: #000000;
+}
+
+.valid-pawn-move {
+  /* Style the pawns on the board */
+  border: 0 solid #333;
+  height: 25%;
+  width: 25%;
+  /* Center vertically and horizontally */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.valid-pawn-move#white-move {
+  background-color: lightgray;
+}
+
+.valid-pawn-move#black-move {
+  background-color: #000000;
+}
+
+/* Turn animation */
+.lds-facebook {
+  display: inline-block;
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+.lds-facebook div {
+  display: inline-block;
+  position: absolute;
+  left: 4px;
+  width: 8px;
+  background: #fff;
+  animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+.lds-facebook div:nth-child(1) {
+  left: 4px;
+  animation-delay: -0.24s;
+}
+.lds-facebook div:nth-child(2) {
+  left: 16px;
+  animation-delay: -0.12s;
+}
+.lds-facebook div:nth-child(3) {
+  left: 28px;
+  animation-delay: 0;
+}
+@keyframes lds-facebook {
+  0% {
+    top: 4px;
+    height: 32px;
+  }
+  50%, 100% {
+    top: 12px;
+    height: 16px;
+  }
+}

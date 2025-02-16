@@ -1,0 +1,9 @@
+<!-- https://ordinarycoders.com/blog/article/django-messages-framework -->
+{% if messages %}
+
+<!-- https://www.w3schools.com/bootstrap/bootstrap_alerts.asp -->
+{% for message in messages %}
+    <div {% if message.tags %} class="alert {{ message.tags }}"{% endif %}>{{ message }}</div>
+{% endfor %}
+
+{% endif %}

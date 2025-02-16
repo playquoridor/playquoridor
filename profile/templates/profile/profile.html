@@ -1,0 +1,51 @@
+{% extends "base_generic.html" %}
+{% load games_tags %}
+{% load tz %}
+
+{% block content %}
+    {% load static %}
+    {% load games_tags %}
+    {% load profile_tags %}
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="{% static 'profile/css/styles.css' %}">
+
+    <div>
+        <!-- <h3> <span class="dot {%get_online_status query_user%}"></span> {{query_user.username}} </h3> -->
+
+        <div class="horizontal-container">
+            <div class="horizontal-container-box" style="padding-bottom: 0;">
+                <div class="title">
+                    <span class="dot {%get_online_status query_user%}"></span> {{query_user.username}}
+                </div>
+
+                {% localtime on %}
+                    Last login: {% get_time_ago query_user.last_login %}
+                    <br>
+                    Member since: {{query_user.date_joined}}
+                {% endlocaltime %}
+
+                <br>
+                Number of games played: {{n_games}}
+            </div>
+            <div class="horizontal-container-box" style="padding-bottom: 0;">
+                <div class="title"> Rating evolution </div>
+                <script defer src="{% static 'profile/js/plot_ratings_evolution.js' %}"
+                        data-ratingstable="{{ratings_table}}"
+                        data-ratingscolumns="{{ratings_columns}}"
+                ></script> <!--- safely passing arguments to JS --->
+                <div id="chart_container" style="display: inline-block; margin: 0 auto;"></div>
+            </div>
+        </div>
+
+        {% include "profile/include/list_games.html" with games_page=game_list query_user=query_user.username %}
+        <div class="title">
+            See <a href="{% url 'profile:list_games' query_user.username %}">more</a> games
+        </div>
+
+        {% if user.is_authenticated and user != query_user %}
+            <a href="{% url 'profile:list_user_user_games' user.username query_user.username %}">Games vs {{query_user.username}}</a>
+        {% endif %}
+
+    </div>
+
+{% endblock %}

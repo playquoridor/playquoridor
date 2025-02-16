@@ -1,0 +1,61 @@
+{% load static %}
+{% load games_tags %}
+
+<div class="game-description">
+    {% flip_board game player.username as flip_board_flag %}
+    <!-- <p class="date"> {{game.game_time}} </p> -->
+
+    <div class="player-bar top-borders" id="bar-{{opponent.username}}">
+        <span class="player-info" id="player-{{opponent.username}}">
+            <span class="dot {%get_player_color game opponent.username%}"></span>
+            <span class="white-text">
+                <a class='user' href="{% url 'profile:show_profile' opponent.username %}">
+                    <b>{%trim_string opponent.username %}</b>
+                    ({% convert2int opponent.rating %})
+                </a>
+            </span>
+            <span id="{{opponent.username}}_delta_rating"> {% rating_delta opponent.delta_rating %} </span>
+            <span id="turn_{{opponent.username}}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span class="dot {%get_online_status opponent.user%}"></span>
+            <span id="walls_{{opponent.username}}"> walls </span>
+        </span>
+    </div>
+
+    {% if flip_board %}
+    <div class="board rotated" id="board-{{game.game_id}}">
+    {% else %}
+    <div class="board" id="board-{{game.game_id}}">
+    {% endif %}
+        <!-- Add HTML elements for the board squares and pieces -->
+        <!-- <script type="module" src="{% static 'game/js/load_board.js' %}"></script> -->
+        <script type="module"
+                src="{% static 'game/js/load_board.js' %}"
+                data-fen="{{ game.FEN }}"
+                data-gameid="{{ game.game_id }}"
+                data-opponentusername="{{ opponent.username }}"
+                data-playercolor="{{ player_color }}"
+                data-playerusername="{{ player.username }}"
+                data-timeend="{{ time_end }}"
+        ></script>
+    </div>
+
+    <div class="player-bar bottom-borders" id="bar-{{player.username}}">
+        <span class="player-info" id="player-{{player.username}}">
+            <span class="dot {%get_player_color game player.username%}"></span>
+            <span class="white-text">
+                <a class="user" href="{% url 'profile:show_profile' player.username %}">
+                    <b>{%trim_string player.username %}</b>
+                    ({% convert2int player.rating%})
+                </a>
+            </span>
+            <span id="{{player.username}}_delta_rating"> {% rating_delta player.delta_rating %} </span>
+            <span id="turn_{{player.username}}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span class="dot {%get_online_status player.user%}"></span>
+            <span id="walls_{{player.username}}"> walls </span>
+        </span>
+    </div>
+</div>

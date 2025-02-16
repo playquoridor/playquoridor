@@ -1,0 +1,11 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    {% load static %}
+    {% load games_tags %}
+    <link rel="stylesheet" href="{% static 'profile/css/styles.css' %}">
+    <br>
+<h4> <span class="dot {%get_online_status query_user%}"></span> <b>{{query_user.username}}</b> games </h4>
+    {% include "profile/include/list_games.html" with games_page=games_page query_user=query_user.username %}
+
+{% endblock %}

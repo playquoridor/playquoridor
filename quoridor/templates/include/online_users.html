@@ -1,0 +1,52 @@
+{% load static %}
+{% load games_tags %}
+
+<div class="sub-container">
+    <div class="title">
+        Online users
+    </div>
+    <div class="leaderboard-container">
+        <input class="input-tab" id="bullet-tab-online" type="radio" name="tabs-online">
+        <label class="label-tab" for="bullet-tab-online">Bullet</label>
+        <input class="input-tab" id="blitz-tab-online" type="radio" name="tabs-online" checked>
+        <label class="label-tab" for="blitz-tab-online">Blitz</label>
+        <input class="input-tab" id="rapid-tab-online" type="radio" name="tabs-online">
+        <label class="label-tab" for="rapid-tab-online">Rapid</label>
+        <input class="input-tab" id="standard-tab-online" type="radio" name="tabs-online">
+        <label class="label-tab" for="standard-tab-online">Standard</label>
+
+        {% with 'bullet blitz rapid standard' as TIME_CONTROLS %}
+            {% for control in TIME_CONTROLS.split %}
+                <section class="section-tab" id="{{control}}-content-online">
+                    <form onsubmit="sendChallenge('{{control}}'); return false;" method="post">
+                        {% csrf_token %}
+                        <div>
+                            {% for ud in online_user_details %}
+                                <li class="leaderboard-player">
+                                    {% if user.is_authenticated and not active_game_exists %}
+                                        <input type="radio" class="leaderboard-name" id="{{control}}-challenged_username" name="challenged_user" value="{{ud.user.username}}" checked>
+                                    {% endif %}
+                                    <a class="user leaderboard-name" href="{% url 'profile:show_profile' ud.user.username %}">
+                                        <span> {% trim_string ud.user.username k=20 %} </span>
+                                    </a>
+                                    <span class="leaderboard-rating"> {% get_rating_str ud control %} </span>
+                                </li>
+                            {% endfor %}
+                        </div>
+
+                        <input type="hidden" id="{{control}}-time" value="{% get_default_time control %}">
+                        <input type="hidden" id="{{control}}-increment" value="{% get_default_increment control %}">
+
+                        {% if user.is_authenticated and not active_game_exists %}
+                            <div class="center challenge-box" id="{{control}}-challenge-box">
+                                <!-- <input type="submit" value="Send challenge"> -->
+                                <button type="submit" class="btn btn-primary challenge-button" id="{{control}}-challenge-button">Challenge ({% get_default_time control %}+{% get_default_increment control %})</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </section>
+            {% endfor %}
+        {% endwith %}
+        {{ online_users_count }} online users
+    </div>
+</div>

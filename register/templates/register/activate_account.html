@@ -1,0 +1,10 @@
+{% autoescape off %}
+Hi {{ user.username }},
+
+Please click on the link below to confirm your registration on PlayQuoridor:
+
+http://{{ domain }}{% url 'register:activate' uidb64=uid token=token %}
+
+This link is valid for 1 hour.
+
+{% endautoescape %}

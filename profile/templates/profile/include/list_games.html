@@ -1,0 +1,54 @@
+{% load games_tags %}
+{% load tz %}
+
+<div class="game-list">
+    {% for game in games_page %}
+        {{ game.game_id|json_script:"game-id" }}
+        {{ query_user|json_script:"player" }}
+        {{ game.FEN |json_script:"FEN" }}
+
+        {% get_player game query_user as query_player %}
+        {% get_opponent game query_user as opponent %}
+        {% flip_board game query_user as flip_board_flag %}
+
+        {{ opponent.username|json_script:"opponent" }}
+        {{ query_player.color|json_script:"player-color" }}
+
+        <div class="game" id="game-{{ game.game_id }}">
+            <div class="date">
+                {{ game.game_time|localtime}}
+            </div>
+            {% include "game/include/static_game.html" with game=game player=query_player opponent=opponent %}
+        </div>
+    {% endfor %}
+</div>
+
+<div class="pagination">
+    <span class="step-links">
+        {% if games_page.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ games_page.previous_page_number }}">previous</a>
+        {% endif %}
+
+        {% if games_page|length > 0 %}
+            <span class="current-page">{{ games_page.number }}</span>
+        {% endif %}
+
+        {% if games_page.has_next %}
+            <a href="?page={{ games_page.next_page_number }}">next</a>
+            <a href="?page={{ games_page.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+<script>
+    // Add game links
+    const games = document.getElementsByClassName('game');
+    for (const game of games){
+        game.onclick = function (){
+            /* Ref: https://stackoverflow.com/questions/11844430/back-button-fails-after-window-location-replacehref */
+            window.location.href = "http://" + window.location.host + "/game/" + game.id.split('-')[1];
+        }
+        game.classList.add('pointer');
+    }
+</script>

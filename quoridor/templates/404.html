@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load games_tags %}
+
+{% block content %}
+    <div class="alert-danger">
+        Error 404: Not found
+        {% if error %}
+        <ul class="errorlist">
+            <li>
+                {{ error }}
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+
+{% endblock %}

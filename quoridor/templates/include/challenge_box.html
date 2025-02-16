@@ -1,0 +1,69 @@
+<div class="sub-container">
+    {% if active_game_exists %}
+    <div class='displayed-game' id="game-{{ active_game.game_id }}">
+        <div class="title">
+            Active game
+        </div>
+        {% include "game/include/static_game.html" with game=active_game player=active_game_player opponent=active_game_opponent %}
+    </div>
+    {% else %}
+        <div class="title">
+            Send challenge
+        </div>
+        <form onsubmit="sendChallenge('manual'); return false;" method="post">
+            {% csrf_token %}
+            <fieldset>
+                <br>
+
+                <b>Opponent</b>
+                <div>
+                    <input type="text" id="manual-challenged_username" name="challenged_username" value=""><br>
+                </div>
+                <br>
+
+                <!--
+                <b>Color</b>
+                <div>
+                    &nbsp;&nbsp;
+                    <input type="radio" id="random" name="player_color" value="random" checked>
+                    <label for="random">Random&nbsp;&nbsp;&nbsp;</label>
+                    <input type="radio" id="white" name="player_color" value="white">
+                    <label for="white">White&nbsp;&nbsp;&nbsp;</label>
+                    <input type="radio" id="black" name="player_color" value="black">
+                    <label for="black">Black</label>
+                </div>
+                <br>
+                -->
+
+                <b>Time control</b>
+                <fieldset>
+                    <label>Time (min):</label>
+                    <select name="time" id="manual-time">
+                      <option value="1">1</option>
+                      <option value="3">3</option>
+                      <option value="5" selected="selected">5</option>
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                    </select>
+
+                    <label> &nbsp; Incr. (sec):</label>
+                    <select name="increment" id="manual-increment">
+                      <option value="0">0</option>
+                      <option value="1">1</option>
+                      <option value="3" selected="selected">3</option>
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                    </select>
+                </fieldset>
+            </fieldset>
+            <br>
+            <div class="center" id="manual-challenge-box">
+                <!-- <input type="submit" value="Send challenge"> -->
+                <button type="submit" class="btn btn-primary" id="manual-challenge-button">Challenge</button>
+            </div>
+            <!-- <input type="submit" value="Send challenge"> -->
+        </form>
+
+        <br>
+    {% endif %}
+</div>

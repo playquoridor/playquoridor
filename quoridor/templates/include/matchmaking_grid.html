@@ -1,0 +1,25 @@
+{% load static %}
+
+<div class="matchmaking-container" id="matchmaking-container">
+    <script src="{% static 'matchmaking/js/join_matchmaking.js' %}"></script>
+    <!-- Matchmaking -->
+    <div class="matchmaking-grid-2x2" id="matchmaking-grid">
+        <button class="time-control-button" onclick="joinMatchmaking(event, 2, 1);">
+            <span class="time-duration">2 + 1</span>
+            <span class="time-type">Bullet</span>
+        </button>
+        <button class="time-control-button" onclick="joinMatchmaking(event, 3, 2);">
+            <span class="time-duration">3 + 2</span>
+            <span class="time-type">Blitz</span>
+        </button>
+        <button class="time-control-button" onclick="joinMatchmaking(event, 5, 3);">
+            <span class="time-duration">5 + 3</span>
+            <span class="time-type">Blitz</span>
+        </button>
+        <button class="time-control-button" onclick="joinMatchmaking(event, 10, 5);">
+            <span class="time-duration">10 + 5</span>
+            <span class="time-type">Rapid</span>
+        </button>
+        <!-- Add more buttons for other time controls -->
+    </div>
+</div>

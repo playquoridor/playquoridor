@@ -1,0 +1,55 @@
+{% load static %}
+{% load games_tags %}
+
+<div class="game-description">
+
+    <div class="player-bar top-borders" id="bar-{{opponent_username}}">
+        <span class="player-info" id="player-{{opponent_username}}">
+            <span class="dot black"></span>
+            <span class="white-text">
+                <a class='user'>
+                    <b>{{ opponent_username }}</b>
+                </a>
+            </span>
+            <span id="turn_{{opponent_username}}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span id="walls_{{opponent_username}}"> walls </span>
+        </span>
+    </div>
+
+    {% if flip_board %}
+    <div class="board-preview rotated" id="board-{{game_id}}">
+    {% else %}
+    <div class="board-preview" id="board-{{game_id}}">
+    {% endif %}
+        <!-- Add HTML elements for the board squares and pieces -->
+        <!-- <script type="module" src="{% static 'game/js/load_board.js' %}"></script> -->
+        <script type="module"
+                src="{% static 'game/js/load_board.js' %}"
+                data-fen="{{ FEN }}"
+                data-pgn="{{ PGN }}"
+                data-gameid="{{ game_id }}"
+                data-opponentusername="{{ opponent_username }}"
+                data-playercolor="{{ player_color }}"
+                data-playerusername="{{ player_username }}"
+                data-timeend="{{ time_end }}"
+                data-tutorial="true"
+        ></script>
+    </div>
+
+    <div class="player-bar bottom-borders" id="bar-{{player_username}}">
+        <span class="player-info" id="player-{{player_username}}">
+            <span class="dot white"></span>
+            <span class="white-text">
+                <a class="user">
+                    <b>{{ player_username }}</b>
+                </a>
+            </span>
+            <span id="turn_{{player_username}}"> </span>
+        </span>
+        <span class="walls-left white-text">
+            <span id="walls_{{player_username}}"> walls </span>
+        </span>
+    </div>
+</div>

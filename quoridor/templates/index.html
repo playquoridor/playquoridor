@@ -1,0 +1,88 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load games_tags %}
+
+{% block content %}
+    <script src="{% static 'challenge/js/send_challenge.js' %}"></script>
+    <script>
+        // Prevents form resubmission dialog.
+        // Ref: https://stackoverflow.com/questions/6320113/how-to-prevent-form-resubmission-when-page-is-refreshed-f5-ctrlr
+        if ( window.history.replaceState ) {
+            window.history.replaceState( null, null, window.location.href );
+        }
+    </script>
+
+    <div class="hidden pointer" id="join-active-game">
+        <!-- <button id="join-active-game"></button> -->
+    </div>
+
+    <main class="content">
+        {% if user.is_authenticated %}
+        <div class="top-container">
+            {% include "include/matchmaking_grid_all.html" %}
+        </div>
+        {% endif %}
+
+        <div class="middle-container">
+            {% if user.is_authenticated %}
+                {% include "include/challenge_box.html" %}
+            {% else %}
+                <div class="flexible-sub-container sub-container center">
+                    <div class="title">
+                        Welcome
+                    </div>
+                    <div class="small-padding">
+                        <p> Welcome! PlayQuoridor is a free/libre, no-ads, open source Quoridor server powered by volunteers and donations. </p>
+
+                        <p> To get started, <a href="{% url 'register:register' %}?next={{ request.path }}">sign up</a> or <a href="{% url 'login' %}?next={{ request.path }}">log in</a> if you already have an account. </p>
+
+                        <p> This is a beta version. Users may be affected by disruptions. Please <a href="mailto:playquoridor@gmail.com">contact us</a> to report any bugs, propose new features, or if you want to contribute to PlayQuoridor's development.</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% include "include/online_users.html" %}
+
+            {% if top_active_game_exists and not top_active_game_ismine %}
+            <div class="sub-container">
+                <div class='displayed-game' id="game-{{ top_active_game.game_id }}">
+                    <div class="title">
+                        Top rated game
+                    </div>
+                    {% include "game/include/static_game.html" with game=top_active_game player=top_active_game_player opponent=top_active_game_opponent %}
+                </div>
+            </div>
+            {% else %}
+                {% include "include/leaderboard.html" %}
+            {% endif %}
+        </div>
+
+        <div class="justify small-font gray-text"> <!-- small-padding -->
+            <p> <b> Terms of Service.</b> <i> PlayQuoridor </i> is under continuous development. In this beta version, users may be affected by maintenance and technological disruptions (including glitches and data loss). If you do not agree, do not use our website or services. We are not liable for any losses or harm to you. By using our platform, you accept these conditions. </p>
+        </div>
+    </main>
+
+<script>
+    // Add game links
+    const games = document.getElementsByClassName('displayed-game');
+    for (const game of games){
+        game.onclick = function (){
+            /* Ref: https://stackoverflow.com/questions/11844430/back-button-fails-after-window-location-replacehref */
+            window.location.href = window.location.protocol + "//" + window.location.host + "/game/" + game.id.split('-')[1];
+        }
+        game.classList.add('pointer');
+    }
+</script>
+{% endblock %}
+
+{% block leftblock %}
+{% endblock %}
+
+{% block rightblock %}
+{% endblock %}
+
+
+<!-- Active game -->
+{% block activegame %}
+
+{% endblock %}
