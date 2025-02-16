@@ -1,3 +1,7 @@
+<p align="center">
+    <a href="https://playquoridor.online"> <img src="https://github.com/playquoridor/quoridor/blob/main/logo.png" alt="PlayQuoridor logo" style="width:400px;"/><a>
+</p>
+
 # Instructions for installing the server (Ubuntu 22.04)
 
 ## Installation
