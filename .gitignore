@@ -2,4 +2,3 @@
 *__pycache__*
 *.sqlite3
 */migrations/*
-*quoridor/settings.py
