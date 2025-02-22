@@ -110,9 +110,6 @@ h1 {
 /*
 Container width
  */
-.third-width{
-    /* width: calc(32.5%); */
-}
 
 /* Matchmaking grid */
 .matchmaking-grid {
@@ -137,7 +134,26 @@ Container width
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
 }
 
+.highlight-button {
+    border: 2px solid #5f5a51;
+}
+
+/* Add the "Recommended" label */
+.highlight-button::after {
+    content: "Recommended";
+    position: absolute;
+    top: -6px;
+    right: -5px;
+    background-color: #4f4843;
+    color: white;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
 .time-control-button {
+    position: relative;
     background-color: #d5e8d4; /* Match the sidebar's background color */
     color: #333; /* Text color */
     border: none;
