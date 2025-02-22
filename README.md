@@ -8,7 +8,7 @@ PlayQuoridor is under continuous development. Users may be affected by disruptio
 
 PlayQuoridor is implemented in Django (Python). We welcome contributions from developers, designers, and testers. Let us build an online Quoridor community together! 
 
-## Instructions for installing the server (Ubuntu 22.04)
+## Instructions for installing the server (Ubuntu 24.04)
 
 ### Installation
 Install pip
