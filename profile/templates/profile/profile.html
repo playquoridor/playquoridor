@@ -14,8 +14,8 @@
 
         <div class="horizontal-container">
             <div class="horizontal-container-box" style="padding-bottom: 0;">
-                <div class="title">
-                    <span class="dot {%get_online_status query_user%}"></span> {{query_user.username}}
+                <div class="center">
+                    <b><span class="dot {%get_online_status query_user%}"></span> {{query_user.username}}</b>
                 </div>
 
                 {% localtime on %}
@@ -28,7 +28,7 @@
                 Number of games played: {{n_games}}
             </div>
             <div class="horizontal-container-box" style="padding-bottom: 0;">
-                <div class="title"> Rating evolution </div>
+                <div class="center"> <b> Rating evolution </b> </div>
                 <script defer src="{% static 'profile/js/plot_ratings_evolution.js' %}"
                         data-ratingstable="{{ratings_table}}"
                         data-ratingscolumns="{{ratings_columns}}"
@@ -38,7 +38,7 @@
         </div>
 
         {% include "profile/include/list_games.html" with games_page=game_list query_user=query_user.username %}
-        <div class="title">
+        <div class="center">
             See <a href="{% url 'profile:list_games' query_user.username %}">more</a> games
         </div>
 

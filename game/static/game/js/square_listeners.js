@@ -39,6 +39,6 @@ export function sendPawnMessageEvent(event, playerColor, gameSocket){
         'target_row': targetSquare.row,
         'target_col': targetSquare.col,
     });
-    console.log(message);
+    // console.log(message);
     gameSocket.send(message);
 }

@@ -25,6 +25,7 @@ urlpatterns = [
     path('user/', include('profile.urls', namespace='profile')),
     path('register/', include('register.urls')),
     path('tutorial/', include('tutorial.urls')),
+    path('community/', views.community, name='community'),
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view()),
     path('accounts/logout/', auth_views.LogoutView.as_view()),

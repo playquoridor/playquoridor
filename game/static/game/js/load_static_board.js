@@ -90,7 +90,6 @@ function movePawnEvent(event){
     const sourceSquare = pawn.square;  //board.querySelector('[square-id=' + pawn.square.id + ']');
     sourceSquare.innerHTML = ''; //.removeChild(pawn);
 
-    // console.log('Child removed', sourceSquare);
     pawn.square = targetSquare;
     targetSquare.appendChild(pawn);
 }
@@ -118,7 +117,6 @@ function setWinner(data, gameId) {
 
     // Show rating diffs
     if (data['player_username'] + '_delta_rating' in data) {
-        console.log('Entering rating diff', data['player_username'])
         const playerRatingDiff = document.getElementById(data['player_username'] + '_delta_rating-' + gameId);
         let delta = data[data['player_username'] + '_delta_rating'];
         if (parseInt(delta) >= 0) {
@@ -152,7 +150,6 @@ function setActivePlayer(data, gameId){
         setWinner(data, gameId);
         return null;
     }else{
-        console.log('Active user', data['active_username']);
         const playerBar = document.getElementById('bar-' + data['active_username'] + '-' + gameId);
         playerBar.classList.add('active-bar');
         return data['active_username'];
@@ -416,7 +413,6 @@ if (!gameEnded && showLive){
         const board = document.getElementById('board-' + data['game_id']);
         switch (data['action']){
             case 'FEN':
-                console.log('Setting up FEN from consumer...', playerColor);
                 //setupBoardFromFEN(data['FEN'], data['game_id'], playerColor, playerUsername, opponentUsername);
                 setupBoardFromFEN(data['FEN'], data['game_id'], data['player_color'], data['player_username'], data['opponent_username']);
                 break;

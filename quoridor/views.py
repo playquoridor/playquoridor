@@ -144,6 +144,10 @@ def index(request):
                **online_users_context(request)}
     return render(request, 'index.html', context)
 
+def community(request):
+    context = active_game_context(request)
+    context = {}
+    return render(request, 'community.html', context)
 
 #####################
 #    Error pages    #

@@ -1,0 +1,91 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load games_tags %}
+
+{% block content %}
+    <script src="{% static 'challenge/js/send_challenge.js' %}"></script>
+    <script>
+        // Prevents form resubmission dialog.
+        // Ref: https://stackoverflow.com/questions/6320113/how-to-prevent-form-resubmission-when-page-is-refreshed-f5-ctrlr
+        if ( window.history.replaceState ) {
+            window.history.replaceState( null, null, window.location.href );
+        }
+    </script>
+
+    <div class="hidden pointer" id="join-active-game">
+        <!-- <button id="join-active-game"></button> -->
+    </div>
+
+    <main class="content">
+        <div class="middle-container">
+            <div class="sub-container">
+                <div class="title">
+                    Joining the community
+                </div>
+                <div class="small-padding justify">
+                    <p> <i> PlayQuoridor </i> is a free/libre, no-ads, open source Quoridor server powered by volunteers and donations. </p>
+                    <!-- Write text encouraging donations and joining the community -->
+                    <p> We're building a vibrant space for Quoridor enthusiasts to connect, compete, and enjoy the game in real time. Keeping <i>PlayQuoridor</i> running smoothly requires maintaining servers, improving features, and ensuring a great experience for everyone. We rely on support from players like you to make this possible. If you enjoy playing on <i>PlayQuoridor</i>, please consider supporting us with a donation—every contribution helps us keep the platform online and growing!
+                </div>
+                <div class="center">
+                    <div class="social-icons">
+                        <a href="https://t.me/+xai22EEyZDplMjk0" target="_blank">
+                            <i class="fa-brands fa-telegram fa-2xl"></i>
+                        </a>
+                        <a href="https://x.com/PlayQuoridor" target="_blank">
+                            <i class="fa-brands fa-x-twitter fa-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sub-container">
+                <div class="title">
+                    Contributing as a developer
+                </div>
+                <div class="small-padding justify">
+                    <p> Quoridor is more than just a game—it's a growing community, and you can be a part of shaping its future!  While we may not have the expertise of <a href='https://lichess.org'>Lichess</a>, our goal is to become its equivalent for Quoridor, offering a free and open platform for everyone to play. </p>
+                    <p> We'd love your help! The platform welcomes contributions from developers, designers, and testers. Whether you want to improve features, fix bugs, or enhance the user experience, your skills can make a real impact. Check out our GitHub, and let’s build an amazing online Quoridor community together! </p>
+                </div>
+                <div class="center">
+                    <div class="social-icons">
+                        <a href="https://github.com/playquoridor/playquoridor" target="_blank">
+                            <i class="fa-brands fa-github fa-2xl"></i>
+                        </a>
+                        <a href="https://t.me/+RnbKzc8oaWcyMWFk" target="_blank">
+                            <i class="fa-brands fa-telegram fa-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="justify small-font gray-text"> <!-- small-padding -->
+            <p> <b> Terms of Service.</b> <i> PlayQuoridor </i> is under continuous development. In this beta version, users may be affected by maintenance and technological disruptions (including glitches and data loss). If you do not agree, do not use our website or services. We are not liable for any losses or harm to you. By using our platform, you accept these conditions. </p>
+        </div>
+    </main>
+
+<script>
+    // Add game links
+    const games = document.getElementsByClassName('displayed-game');
+    for (const game of games){
+        game.onclick = function (){
+            /* Ref: https://stackoverflow.com/questions/11844430/back-button-fails-after-window-location-replacehref */
+            window.location.href = window.location.protocol + "//" + window.location.host + "/game/" + game.id.split('-')[1];
+        }
+        game.classList.add('pointer');
+    }
+</script>
+{% endblock %}
+
+{% block leftblock %}
+{% endblock %}
+
+{% block rightblock %}
+{% endblock %}
+
+
+<!-- Active game -->
+{% block activegame %}
+
+{% endblock %}

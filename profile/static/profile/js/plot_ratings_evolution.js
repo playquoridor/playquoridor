@@ -20,31 +20,6 @@ jsonString = jsonString.replace(/\bnan\b/g, "null")
 // Add commas between the inner arrays
 // jsonString = '[["2023-12-23", 1500, 1500], ["2023-12-24", 1344, 1662], ["2023-12-29", 1244, 1962], ["2024-3-29", 1644, 2062]]'
 const ratingList = JSON.parse(jsonString);
-console.log('Rating columns', ratingColumns)
-console.log('Rating list', ratingList)
-
-//replaceQuotes(ratingListInput)
-//console.log('RLI', ratingListInput)
-//const ratingList = JSON.parse(ratingListInput);
-//const ratingList = ratingListInput;
-
-
-/* const ratingList = [
-    ['2023-01-01', 1500],
-    ['2023-01-05', 1550],
-    ['2023-01-10', 1600],
-    ['2023-02-5', 1420],
-    ['2023-02-25', 1700],
-    ['2023-03-21', 2000],
-    ['2023-05-4', 2200],
-    ['2023-05-10', 2100],
-    ['2023-06-10', 2200],
-    ['2024-06-10', 2500],
-    ['2025-06-10', 2700],
-    ['2027-06-10', 2500],
-    ['2035-06-10', 3000],
-]*/
-
 
 if (ratingList.length > 0){
     // Has rated games

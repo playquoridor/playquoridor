@@ -38,7 +38,7 @@ h1 {
     gap: 5px;
     /* justify-content: center;*/
     /* flex-direction: column; */
-    align-items: center;
+    /* align-items: center; */
     justify-content: space-between;
 }
 
@@ -58,9 +58,9 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: #f9f9f9;
     border-radius: 10px;
-    margin-bottom: 5px;
+    /* margin-bottom: 5px;*/
+    margin: 10px;
     gap: 0px;
-    width: 100%;
     padding: 5px;
 }
 
@@ -77,8 +77,9 @@ h1 {
     gap: 0px;
     width: 100%;
     padding: 20px;
-    min-height: 420px;
-    max-width: 310px;
+    padding-bottom: 5px;
+    min-height: 410px;
+    /* max-width: 310px;*/
 }
 
 .flexible-sub-container {
@@ -183,7 +184,8 @@ Text
 .leaderboard-container {
     /* background-color: #f0f0f0; */
     /* background-color: white; /* Set the background to white */
-    padding: 20px;
+    padding: 10px;
+    min-height: 80%;
     /* max-height: 330px;
     overflow-y: auto; *//* Enable vertical scrolling for the move list */
     /*border: 1px solid #DDD;*/
@@ -272,8 +274,9 @@ input.input-tab:checked+label.label-tab{
 .form-container {
     background-color: #fff;
     border-radius: 10px;
+    margin: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    padding: 5px;
 }
 
 /* User Leaderboard Section */
@@ -283,7 +286,6 @@ input.input-tab:checked+label.label-tab{
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 
 .user-profile {
     text-align: right;
@@ -318,7 +320,8 @@ input.input-tab:checked+label.label-tab{
 /* Games */
 .game-list {
     display: flex;
-      flex-wrap: wrap;
+    flex-wrap: wrap;
+    width: 100%;
     /* flex-direction: column; */
     /* justify-content: space-between;  /* space-between */
 }
@@ -331,7 +334,8 @@ input.input-tab:checked+label.label-tab{
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     /* margin-bottom: 10px;*/
     min-height: 390px;
-    max-width: 275px;
+    /*max-width: 290px;*/
+    width: 32.25%;
     margin: 3px;
     /*width: calc(32.75%); /* Adjust the width as needed */
 }
@@ -392,7 +396,7 @@ input.input-tab:checked+label.label-tab{
 
 .turn{
     flex: 0;
-    text-center: right;
+    text-align: right;
 }
 
 .player-info{
@@ -448,10 +452,6 @@ input.input-tab:checked+label.label-tab{
     /* box-shadow: 0 0 0 4px limegreen; */
 }
 
-.offline {
-    /* background-color: lightgray;*/
-}
-
 .walls-left{
     flex: 3;
     text-align: right;
@@ -505,6 +505,11 @@ div .justify {
 
 div .small-padding {
     padding: 10px;
+}
+
+/* Text at the bottom WITHIN container. No absolute position */
+.bottom-text {
+    bottom: 0;
 }
 
 /* Sidebar */
@@ -563,7 +568,7 @@ Profile
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
     background-color: #f9f9f9; /* Match the website's background color */
     border-radius: 5px; /* Rounded corners */
-    width: 98.75%;
+    width: 98.25%;
     margin-left: 2px;
 }
 
@@ -673,10 +678,14 @@ Send challenges
     float: right;
 }
 
+/* Make title more fancy */
 .title{
     text-align: center;
     font-weight: bold;
     margin-bottom: 5px;
+    /* Design title so that it blends in well in white box with corners */
+    background-color: #ede4e4;
+    border-radius: 5px;
 }
 
 .no-margin{
@@ -895,4 +904,30 @@ Game info
 .move-list-button:hover{
     /* background-color: lightskyblue; */
     background-color: darkslategray;
+}
+
+/* Fancy box for highlighting a text */
+.highlight-box {
+    background-color: #d5d5ce;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+/* Social icons */
+
+.social-icons {
+    /* display: flex; */
+    gap: 25px; /* Space between icons */
+}
+
+.social-icons a {
+    font-size: 20px;
+    color: black;
+    text-decoration: none;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.social-icons a:hover {
+    transform: scale(1.2);
+    color: #1DA1F2;  /* Example: Twitter blue */
 }

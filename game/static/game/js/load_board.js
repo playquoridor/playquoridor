@@ -106,7 +106,6 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
     if (!isSpectator && 'end_time' in data && 'time_now' in data) {  // TODO: Only if game just finished
         const endTime = new Date(data['end_time']);
         const now = new Date(data['time_now']);
-        console.log(endTime, now, now - endTime);
 
         if ((now - endTime)/1000 < 120) {  // If game finished less than 5 minutes ago
             const rematch = document.getElementById('rematch-box');
@@ -179,7 +178,6 @@ Time
  */
 let activeInterval;
 function startTimer(activePlayer, gameSocket) {
-    // console.log('Starting timer');
     if (activeInterval)
         clearInterval(activeInterval);
 
@@ -198,7 +196,6 @@ function startTimer(activePlayer, gameSocket) {
             requestTimeCheck(gameSocket, activePlayer);
         }
         playerTimeBox.textContent = new Date(timer * 1000).toISOString().slice(14, 19);
-        // console.log('Timer: ', timer)
     }, 1000);
 
 }
@@ -899,14 +896,12 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
     gameSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const board = document.getElementById('board-' + gameId);
-        console.log('Message received', data)
         switch (data['action']) {
             case 'FEN':
                 FEN = data['FEN'];
                 setupBoardFromFEN(data['FEN'], gameId, playerColor, playerUsername, isSpectator, opponentUsername, gameSocket);
                 break;
             case 'PGN':
-                // console.log('PGN received!', data['PGN']);
                 if (PGN === undefined) {
                     PGN = data['PGN'];
                     if (parseInt(data['move_count']) > 0)
@@ -1001,7 +996,6 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
     }
 
     gameSocket.onclose = function (e) {
-        console.log(e);
         console.error('Chat socket closed unexpectedly');
 
         // Disconnected... Attempting to reconnect?
@@ -1018,7 +1012,6 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 container.appendChild(errorDiv);
             }
 
-            console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
             setTimeout(function() {
                 gameSocket = createWebsocket(gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs, PGN, timeEnd);
             }, 1000);
@@ -1067,7 +1060,6 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     var analysisFENs = [' / /E1E9/10 10/1'];
     if (FEN !== undefined && tutorial) {
-        // console.log('FFF', FEN)
         analysisFENs = [FEN];
     }
 

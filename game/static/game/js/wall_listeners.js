@@ -65,7 +65,6 @@ export function sendFenceMessageCallback(gameSocket, playerColor){
             'col': Math.min(wall.col, nextWall.col),
             'subwallId': subwallId
         });
-        console.log(message);
         gameSocket.send(message);
     }
 }
