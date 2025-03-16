@@ -36,7 +36,7 @@ import time
 # Add argument
 parser = argparse.ArgumentParser()
 parser.add_argument('--server_ip', type=str, default='127.0.0.1')
-parser.add_argument('--protocol', type=str, default='ws')
+parser.add_argument('--protocol', type=str, default='wss')
 parser.add_argument('--max_concurrent_bots', default=16)
 parser.add_argument('--bind_port', type=int, default=9998)
 args = parser.parse_args()
