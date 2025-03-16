@@ -15,7 +15,15 @@
         <div class="horizontal-container">
             <div class="horizontal-container-box" style="padding-bottom: 0;">
                 <div class="center">
-                    <b><span class="dot {%get_online_status query_user%}"></span> {{query_user.username}}</b>
+                    <b>
+                        <span class="dot {%get_online_status query_user%}"></span> 
+                        {% if query_user.userdetails.bot %}
+                            <span class="bot-text">
+                                <b> BOT </b>
+                            </span>
+                        {% endif %}
+                        {{query_user.username}}
+                    </b>
                 </div>
 
                 {% localtime on %}

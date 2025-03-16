@@ -3,11 +3,19 @@ from django.contrib.auth.models import User
 import random
 
 
+def has_active_game(player_username):
+    try:
+        latest_player = Player.objects.filter(user__username=player_username, game__abort=False).latest('game__game_time')
+        return not latest_player.game.ended()
+    except Player.DoesNotExist:
+        return False
+    
+
 def check_rating_integrity_or_update(player_username):
     try:
-        latest_player = Player.objects.filter(user__username=player_username, game__abort=False,
-                                              game__rated=True).latest(
-            'game__game_time')
+        # latest_player = Player.objects.filter(user__username=player_username, game__abort=False, game__rated=True).latest('game__game_time')
+        latest_player = Player.objects.filter(user__username=player_username, game__rated=True, game__winning_player=None, game__draw=False, game__abort=False).latest('game__game_time')
+        
         if not latest_player.ratings_updated():
             print('WARNING: Player ratings were not updated in the last game. Updating now')
             game = latest_player.game

@@ -85,7 +85,7 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
         const turns = document.querySelectorAll('[id^="turn_"]');
         for (const turn of turns)
             turn.textContent = '🤝'; // '⚖️';
-        gameMessage.innerText = 'Draw agreed';
+        gameMessage.innerText = 'Draw';
         if ('just_finished' in data)
             playGameDrawSound();
     }else{

@@ -16,6 +16,8 @@
     {{ flip_board|json_script:"flip-board" }}
     {{ time_end|json_script:"time-end" }}
     {{ game.increment|json_script:"increment" }}
+    {{ opponent.user.userdetails.bot|json_script:"opponent-bot" }}
+    {{ game.total_time_per_player|json_script:"total-time-per-player" }}
 
     <div class="container" id="main-container">
         {% include "game/include/dynamic_game.html" with game=game player=player opponent=opponent time_end=time_end %}

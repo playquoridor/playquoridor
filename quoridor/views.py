@@ -15,7 +15,7 @@ def active_game_context(request):
     if request.user.is_authenticated:
         try:
             latest_player = Player.objects.filter(user__username=request.user.username,
-                                                  game__winning_player=None).latest(
+                                                  game__winning_player=None, game__draw=False, game__abort=False).latest(
                 'game__game_time')
             game = latest_player.game
             if not game.ended():  # Game not finished
@@ -89,7 +89,7 @@ def top_game_context(request, active_game_id=None):
     return context
 
 
-def leaderboard_context(request, k=6):
+def leaderboard_context(request, k=9):
     # top_rated_user_details = UserDetails.objects.filter(user__is_active=True).order_by('standard_rating')[::-1][:k]
     if len(Rating.objects.all()) == 0:
         top_ratings_bullet = []
@@ -125,7 +125,7 @@ def online_users_context(request, k=8):
     if len(online_users) > k:
         online_users = random.sample(list(ud), k)
     context = {
-        'online_users_count': ud.count(),
+        'online_users_count': ud.count()+1,
         'online_user_details': online_users
     }
     return context

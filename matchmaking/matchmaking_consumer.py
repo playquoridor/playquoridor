@@ -4,6 +4,7 @@ from channels.generic.websocket import WebsocketConsumer
 from game.models import Player
 from game.time_controls import time_control
 import socket
+import time
 
 
 class MatchMakingConsumer(WebsocketConsumer):
@@ -59,21 +60,107 @@ class MatchMakingConsumer(WebsocketConsumer):
             }
             self.send(text_data=json.dumps(text_data))
         else:
-            # Find match or join matchmaking pool
-            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('127.0.0.1', 9999))
-            client.settimeout(timeout)
+            try:
+                # Find match or join matchmaking pool
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect(('127.0.0.1', 9999))
+                client.settimeout(timeout)
 
-            t = text_data['time']
-            increment = text_data["increment"]
-            control = time_control(t, increment)
-            self.scope['user'].userdetails.check_or_create_rating(control)
-            rating = self.scope['user'].userdetails.get_rating(control).rating
-            self.rating = rating
+                t = text_data['time']
+                increment = text_data["increment"]
+                control = time_control(t, increment)
+                self.scope['user'].userdetails.check_or_create_rating(control)
+                rating = self.scope['user'].userdetails.get_rating(control).rating
+                self.rating = rating
 
-            message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/' \
-                      f'{t}/{increment}'
-            client.send(message.encode())
+                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}'
+                client.send(message.encode())
+
+                """
+                if 'bot_pool' in text_data:
+                    print('Bot pool')
+                    # Wait 5 seconds, check if match was found, otherwise send message to bot pool
+                    time.sleep(5)
+                    client.close()
+                    # Check if match was found
+                    join_pool = False
+                    try:
+                        # If not, send message to bot pool
+                        latest_player = Player.objects.filter(user__username=self.scope['user'].username, 
+                                                              game__winning_player=None, game__draw=False, game__abort=False).latest('game__game_time')
+                        game = latest_player.game
+                        if game.ended():
+                            print('Last game ended')
+                            join_pool = True
+                    except Player.DoesNotExist:
+                        print('No active game found')
+                        join_pool = True
+                    if join_pool:
+                        # Find match or join matchmaking pool
+                        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        client.connect(('127.0.0.1', 9998))
+                        client.settimeout(timeout)
+
+                        message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}'
+                        client.send(message.encode())"
+                """
+            except ConnectionRefusedError as e:
+                print('Matchmaking failed', e)
+
+            # time.sleep(5)  # Wait 5 seconds, check if match was found, otherwise send message to bot pool
+            # print('OUT')
+
+
+    def request_bot_match(self, text_data, timeout=30):
+        if not text_data['bot_fallback']:
+            return
+
+        # Check if player has active games. Important: assumes only last game can be active (!)
+        # latest_player = Player.objects.filter(user__username=self.username, game__ended=False)
+        has_games = True
+        game_ended = False
+        try:
+            latest_player = Player.objects.filter(user__username=self.scope['user'].username, game__abort=False).latest('game__game_time')
+            game_ended = latest_player.game.ended()            
+        except Player.DoesNotExist:
+            has_games = False
+        print('--->   Has games', has_games, 'Game ended', game_ended, 'User:', self.username)
+        games = [g.game for g in Player.objects.filter(user__username=self.scope['user'].username, game__abort=False)]
+        print(games)
+
+        # Check if player has active games
+        if has_games and not game_ended:
+            game = latest_player.game
+            player_set = game.player_set.all()
+            text_data = {
+                'action': 'matchmaking_failed',
+                'reason': 'Game already in progress',
+                'game_id': game.game_id,
+                'white_player_username': player_set[0].username,
+                'black_player_username': player_set[1].username,
+                'white_player_rating': int(player_set[0].rating),
+                'black_player_rating': int(player_set[1].rating)
+            }
+            self.send(text_data=json.dumps(text_data))
+        else:
+            try:
+                # Find match or join matchmaking pool
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect(('127.0.0.1', 9998))
+                client.settimeout(timeout)
+
+                t = text_data['time']
+                increment = text_data['increment']
+                control = time_control(t, increment)
+                self.scope['user'].userdetails.check_or_create_rating(control)
+                rating = self.scope['user'].userdetails.get_rating(control).rating
+                self.rating = rating
+
+                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}'
+                client.send(message.encode())
+            except ConnectionRefusedError as e:
+                print('Matchmaking failed', e)
+
 
     def disconnect(self, close_code):
         print('User ', self.username, 'disconnected from matchmaking')
@@ -104,3 +191,5 @@ class MatchMakingConsumer(WebsocketConsumer):
         if text_data['action'] == 'match_details':
             # Send message to websocket
             self.send(text_data=json.dumps(text_data))
+        elif text_data['action'] == 'removed_from_pool':
+            self.request_bot_match(text_data)

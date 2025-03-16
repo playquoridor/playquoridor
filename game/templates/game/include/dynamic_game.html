@@ -8,12 +8,17 @@
     <div class="player-bar top-borders" id="bar-{{opponent.username}}">
         <span class="player-info" id="player-{{opponent.username}}">
             <span class="dot {%get_player_color game opponent.username%}"></span>
-            <span class="white-text">
                 <a class='user' href="{% url 'profile:show_profile' opponent.username %}">
-                    <b>{%trim_string opponent.username %}</b>
-                    ({% convert2int opponent.rating %})
+                    {% if opponent.user.userdetails.bot %}
+                        <span class="bot-text">
+                            <b> BOT </b>
+                        </span>
+                    {% endif %}
+                    <span class="white-text">
+                        <b>{%trim_string opponent.username %}</b>
+                        ({% convert2int opponent.rating %})
+                    </span>
                 </a>
-            </span>
             <span id="{{opponent.username}}_delta_rating"> {% rating_delta opponent.delta_rating %} </span>
             <span id="turn_{{opponent.username}}"> </span>
         </span>
@@ -44,12 +49,17 @@
     <div class="player-bar bottom-borders" id="bar-{{player.username}}">
         <span class="player-info" id="player-{{player.username}}">
             <span class="dot {%get_player_color game player.username%}"></span>
-            <span class="white-text">
-                <a class="user" href="{% url 'profile:show_profile' player.username %}">
+            <a class="user" href="{% url 'profile:show_profile' player.username %}">
+                {% if player.user.userdetails.bot %}
+                    <span class="bot-text">
+                        <b> BOT </b>
+                    </span>
+                {% endif %}
+                <span class="white-text">
                     <b>{%trim_string player.username %}</b>
                     ({% convert2int player.rating%})
-                </a>
-            </span>
+                </span>
+            </a>
             <span id="{{player.username}}_delta_rating"> {% rating_delta player.delta_rating %} </span>
             <span id="turn_{{player.username}}"> </span>
         </span>

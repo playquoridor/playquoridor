@@ -46,6 +46,9 @@ class UserDetails(models.Model):
     # Whether the user is online
     online = models.SmallIntegerField(default=0)
 
+    # Whether user is a bot
+    bot = models.BooleanField(default=False)
+
     class Meta:
         indexes = [
             models.Index(fields=['online']),
@@ -61,8 +64,8 @@ class UserDetails(models.Model):
         if len(R) > 0:
             return R[0]
         else:
-            # return self.create_rating(control)
-            return None
+            return self.create_rating(control)
+            # return None
 
     def create_rating(self, control):
         time_control = TIME_CONTROLS_INV[control]
@@ -77,7 +80,10 @@ class UserDetails(models.Model):
     def check_or_create_rating(self, control):
         R = self.get_rating_query(control)
         if not R.exists():
-            self.create_rating(control)
+            R = self.create_rating(control)
+        if len(R) > 0:
+            return R[0]
+        return
 
     def update_rating(self, control, rating, deviation, volatility):
         # Assumes rating for time control exists
@@ -627,6 +633,9 @@ class Move(models.Model):
     move_number = models.PositiveSmallIntegerField(default=0)
 
     # Save FEN? To check 3-fold repetition
+
+    class Meta:
+        ordering = ('move_number',)
 
     def __str__(self):
         # Assumes only fence or move is not None

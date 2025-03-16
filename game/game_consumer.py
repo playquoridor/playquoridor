@@ -7,10 +7,13 @@ from .models import QuoridorGame
 # from .logic.board import Board
 # from .logic.exceptions import *
 from pyquoridor.board import Board
+from pyquoridor.utils import print_board
 from pyquoridor.exceptions import *
+from rest_framework.authtoken.models import Token
 
 from datetime import datetime, timezone
 import django.utils.timezone as djtz
+from collections import defaultdict
 import time
 
 
@@ -19,8 +22,36 @@ class GameConsumer(WebsocketConsumer):
         self.game_id = self.scope['url_route']['kwargs']['game_id']
         self.game_group_name = f'game_{self.game_id}'
 
+        # Extract token from query parameters
+        self.player = None
+        if 'query_string' in self.scope:
+            token_key = None
+            query_string = self.scope["query_string"].decode()
+            split = query_string.split("&")
+            print('Query string', query_string, split)
+            if len(split) > 0:
+                for param in split:
+                    if '=' in param:
+                        key, value = param.split("=")
+                        if key == "token":
+                            token_key = value
+                            break
+                
+                # Validate token
+                if token_key:
+                    try:
+                        token = Token.objects.get(key=token_key)
+                        user = token.user
+
+                        # TODO: Check if user is bot? i.e. allow only bots to connect via token
+                        self.player = user.username  # Assign authenticated user
+                    except Token.DoesNotExist:
+                        self.disconnect()  # Reject connection
+                        return
+
         # Get player information
-        self.player = self.scope['user'].username  # self.scope['session']['player']
+        if self.player is None:
+            self.player = self.scope['user'].username
 
         # Check that user is authorised
 
@@ -85,10 +116,33 @@ class GameConsumer(WebsocketConsumer):
         return self.player_color is None
 
     def reset_board_logic_from_db(self):
+        # Save intermediate FENs to check for 3 move repetitions
+        self.FEN_history = defaultdict(int)
+
         # Instantiate board logic
         self.board_logic = Board()
+        self.FEN_history[self.board_logic.FEN()] += 1
+
+        for move in self.game.move_set.all().order_by('move_number'):
+            if move.pawn_move is not None:
+                try:
+                    self.board_logic.move_pawn(self.board_logic.current_player(),
+                                            move.pawn_move.row,
+                                            move.pawn_move.col,
+                                            check_player=False,
+                                            check_winner=False)
+                except GameOver as e:
+                    pass
+            else:
+                self.board_logic.place_fence(move.fence.row,
+                                             move.fence.col,
+                                             move.fence.fence_type_str,
+                                             check_winner=False,
+                                             run_BFS=False)
+            self.FEN_history[self.board_logic.FEN()] += 1
 
         # Load the board state
+        """
         players = self.game.player_set.all()
         fences = self.game.fence_set.all()
         for fence in fences:
@@ -96,7 +150,8 @@ class GameConsumer(WebsocketConsumer):
 
         for player in players:
             self.board_logic._set_pawn_location(player.player_color, target_row=player.row, target_col=player.col)
-
+        """
+        
     def disconnect(self, close_code):
         print('Disconnecting from game consumer...', self.player_color)
         print(self.game_group_name)
@@ -215,11 +270,12 @@ class GameConsumer(WebsocketConsumer):
             wall_type = text_data_json['wall_type']
             fence_type = wall_type == 'v'
 
-            if self.game.get_fence_number(player) == 0:
-                raise InvalidFence('Player {player} ran out of walls')
+            if self.game.get_fence_number(player) == 0 and updates_game_state:
+                raise InvalidFence(f'Player {player} ran out of walls')
 
             # Place fence. This function raises an error if fence is invalid
             self.board_logic.place_fence(row, col, wall_type, run_BFS=updates_game_state)
+            self.FEN_history[self.board_logic.FEN()] += 1
 
             # If consumer's associated player is placing the fence, update database and communicate with other player
             # if self.player_color == player == self.active_player:  # self.game.get_active_player():
@@ -258,7 +314,7 @@ class GameConsumer(WebsocketConsumer):
                 self.send_pawn_moves(player_color=self.player_color)
 
         except InvalidFence as e:
-            print(e)
+            print(e, print_board(self.board_logic))
 
     def move_pawn(self, text_data_json, check_active_player, make_updates=True):
         if self.game.ended():
@@ -278,9 +334,13 @@ class GameConsumer(WebsocketConsumer):
             self.board_logic.move_pawn(player=player,
                                        target_row=row,
                                        target_col=col)
+            self.FEN_history[self.board_logic.FEN()] += 1
+            if self.FEN_history[self.board_logic.FEN()] >= 3:
+                raise GameOver('-', True, 'Three move repetition')
 
             # If consumer's associated player is moving the pawn, update database and communicate with other player
             updates_game_state = make_updates and self.player_color == player
+            print('Player color', player, self.player_color, 'Update: ', updates_game_state)
             if updates_game_state:
                 # Update database
                 active_player, remaining_time = self.game.update_pawn_position(self.player_color, row, col,
@@ -313,13 +373,18 @@ class GameConsumer(WebsocketConsumer):
                 self.send_pawn_moves(player_color=self.player_color, check_winner=True)
 
         except GameOver as e:
-            # Set winner
-            winner_username = self.color2username[e.winner]
+            if str(e) == 'Three move repetition':
+                winner_username = '-'
+                draw = True
+            else:
+                # Set winner
+                winner_username = self.color2username[e.winner]
+                draw = False
 
             if e.last_move and make_updates and self.player_color == player:
                 # Update database
                 active_player, remaining_time = self.game.update_pawn_position(self.player_color, row, col,
-                                                                               move_time=move_time)
+                                                                            move_time=move_time)
 
                 # Send new active player
                 active_player = self.game.get_active_player()
@@ -337,16 +402,16 @@ class GameConsumer(WebsocketConsumer):
                 # Send move message
                 async_to_sync(self.channel_layer.group_send)(
                     self.game_group_name, {'type': 'game_message',
-                                           'contents': text_data_json,
-                                           'channel_name': self.channel_name}
+                                        'contents': text_data_json,
+                                        'channel_name': self.channel_name}
                 )
 
                 # Finish game
-                self.finish_game(winner_username)
+                self.finish_game(winner_username, draw=draw, draw_reason='Three move repetition' if draw else None)
 
-            print(e)
+                print(e, print_board(self.board_logic))
         except InvalidMove as e:
-            print(e)
+            print(e, print_board(self.board_logic))
 
     def send_pawn_moves(self, player_color, check_winner=False):
         if self.game.ended():
@@ -381,7 +446,7 @@ class GameConsumer(WebsocketConsumer):
         if self.game.is_rated() and not self.is_spectator() and not self.game.ratings_updated(player_color):
             self.game.update_rating(player_color, winner_username, draw)
 
-    def finish_game(self, winner_username, draw=False, abort=False):
+    def finish_game(self, winner_username, draw=False, abort=False, draw_reason=None):
         """
         Assumes game has not ended
         Sets winner, updates player ratings, and messages consumers to inform about game over
@@ -401,6 +466,7 @@ class GameConsumer(WebsocketConsumer):
             'action': 'game_over',
             'winner_username': winner_username,
             'draw': draw,
+            'draw_reason': draw_reason,
             'abort': abort,
             'just_finished': True,
             'game_id': self.game.game_id
@@ -499,10 +565,9 @@ class GameConsumer(WebsocketConsumer):
 
         # User accepting draw offer from other player
         if self.player_color == text_data['player_color']:
-
             if not self.game.ended():
                 winner_username = '-'
-                self.finish_game(winner_username, draw=True)
+                self.finish_game(winner_username, draw=True, draw_reason='Draw accepted')
 
             # Send confirmation
             text_data['just_finished'] = True
@@ -542,7 +607,6 @@ class GameConsumer(WebsocketConsumer):
 
     def acknowledge_connection(self, text_data):
         # TODO: 2+ players
-        print('Player ', text_data['player_color'], ' acknowledging connection')
         if not self.ack_conn:
             self.ack_conn = text_data['player_color'] != self.player_color
 
@@ -557,10 +621,6 @@ class GameConsumer(WebsocketConsumer):
             )
 
     def board_logic_matches_db(self):
-        # start = time.time()
-        # self.game.FEN().replace(' ', '').startswith(self.board_logic.partial_FEN())
-        # end = time.time()
-        # print('Elapsed time FEN check', end - start)
         return self.game.FEN().replace(' ', '').startswith(self.board_logic.partial_FEN())
 
     def perform_action(self, text_data, check_active_player=True, make_updates=True):
@@ -607,7 +667,7 @@ class GameConsumer(WebsocketConsumer):
 
     def game_message(self, contents_dict):
         # Receive message from group
-        print(self.player_color, ': message received from group: ', contents_dict)
+        # print(self.player_color, ': message received from group: ', contents_dict)
         text_data = contents_dict['contents']
 
         # if self.player_color != text_data['player_color']:  # Message sent by opponents consumer

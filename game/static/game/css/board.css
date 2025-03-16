@@ -46,12 +46,12 @@ div + div {
 
 .positive-delta {
     /* color: #0cba0c;*/
-    color: yellowgreen;
+    color: rgb(129, 190, 7);
     /* font-style: italic; */
 }
 
 .negative-delta {
-    color: #f1553d;
+    color: #a51600;
     /* font-style: italic; */
 }
 

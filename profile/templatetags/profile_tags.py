@@ -53,6 +53,9 @@ def pretty_date(time=False):
 
 @register.simple_tag
 def get_time_ago(time):
+    if time is None:
+        return ''
+    
     # Ref: https://stackoverflow.com/questions/796008/cant-subtract-offset-naive-and-offset-aware-datetimes
     naive_time = time  # time.replace(tzinfo=None)
     return pretty_date(naive_time)

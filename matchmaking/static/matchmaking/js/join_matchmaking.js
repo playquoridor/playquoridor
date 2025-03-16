@@ -43,7 +43,8 @@ function joinMatchmaking(event, time, increment){
         const requestMatch = JSON.stringify({
             'action': 'request_match',
             'time': time,
-            'increment': increment
+            'increment': increment,
+            'bot_pool': true
         });
         console.log('Request match', requestMatch);
         matchmakingSocket.send(requestMatch);

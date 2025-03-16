@@ -15,6 +15,7 @@ import django
 django.setup()
 
 from game.game_utils import create_game
+import time
 
 PORT = 8000
 
@@ -84,6 +85,21 @@ def send_match_details(client_1, client_2, game_id):
     async_to_sync(closing_send)(channel_layer, client_2['channel_name'], message)
 
 
+def removed_from_pool_message(client):
+    text_data = {
+        'action': 'removed_from_pool',
+        'bot_fallback': client['bot_fallback'],
+        'username': client['username'],
+        'time': client['time'],
+        'increment': client['increment']
+    }
+    message = {
+        'type': 'matchmaking_message',
+        'contents': text_data
+    }
+    channel_layer = get_channel_layer()
+    async_to_sync(closing_send)(channel_layer, client['channel_name'], message)
+
 def handle_match(client_1, client_2, time, increment):
     # TODO: Check if there's a history of games between the two players, and choose color accordingly?
     game = create_game(client_1['username'],
@@ -96,6 +112,11 @@ def handle_match(client_1, client_2, time, increment):
     # client_2['client'].send(str(game.game_id).encode())  # .send(f'game id, opponent ELO {client_1["elo"]}'.encode())
 
     send_match_details(client_1, client_2, game.game_id)
+
+
+def remove_from_pool_logic(client):
+    remove_client(client)
+    removed_from_pool_message(client)
 
 
 def match_client(client):
@@ -177,6 +198,11 @@ def match_client(client):
             insert_index = bisect.bisect_right(KeyWrapper(connected_clients, key=lambda x: x['elo']), client['elo'])
             connected_clients.insert(insert_index, client)
             connected_usernames_set.add(client['username'])
+        
+        # TODO: This is really hacky... Spawns a thread to automatically remove client after 5 seconds
+        # threading.Thread(target=remove_from_pool_logic, args=(client,)).start()
+        timer = threading.Timer(5, remove_from_pool_logic, args=(client,))
+        timer.start()
 
 
 def remove_client(client):
@@ -210,21 +236,23 @@ def handle_client(client):
     elo = float(config_split[2])  # Potentially other details...
     elo_threshold = float(config_split[3])
     channel_name = config_split[4]
-    client = {
+    bot_fallback = True  # TODO: Let user decide?
+    client_details = {
         'username': username,
         'elo': elo,
         'elo_threshold': elo_threshold,
         'client': client,
-        'channel_name': channel_name
+        'bot_fallback': bot_fallback,
+        'channel_name': channel_name,
     }
 
-    if request_type == 'match_client' and client['username'] not in connected_usernames_set:
-        client['time'] = int(config_split[5])  # Time in minutes
-        client['increment'] = int(config_split[6])  # Increment in seconds
-        match_client(client)
+    if request_type == 'match_client' and client_details['username'] not in connected_usernames_set:
+        client_details['time'] = int(config_split[5])  # Time in minutes
+        client_details['increment'] = int(config_split[6])  # Increment in seconds
+        match_client(client_details)
     elif request_type == 'remove_client':
         print('Removing client ...')
-        remove_client(client)
+        remove_client(client_details)
 
     """
     print(f'Number of connected clients in list {len(connected_clients)}')

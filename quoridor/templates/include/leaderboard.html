@@ -19,7 +19,15 @@
             {% for r in top_ratings_bullet %}
                 <li class="leaderboard-player">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
-                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                        <span class="leaderboard-name">
+                            <!-- <span class="dot {%get_online_status r.user_details.user %}"></span> -->
+                            {% if r.user_details.bot %}
+                                <span class="bot-text">
+                                    <b> BOT </b>
+                                </span>
+                            {% endif %}
+                            {% trim_string r.user_details.user.username k=20 %}
+                        </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
                 </li>
@@ -30,7 +38,14 @@
             {% for r in top_ratings_blitz %}
                 <li class="leaderboard-player">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
-                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                        <span class="leaderboard-name">
+                            {% if r.user_details.bot %}
+                                <span class="bot-text">
+                                    <b> BOT </b>
+                                </span>
+                            {% endif %}
+                            {% trim_string r.user_details.user.username k=20 %}
+                        </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
                 </li>
@@ -41,7 +56,14 @@
             {% for r in top_ratings_rapid %}
                 <li class="leaderboard-player">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
-                        <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                        <span class="leaderboard-name">
+                            {% if r.user_details.bot %}
+                                <span class="bot-text">
+                                    <b> BOT </b>
+                                </span>
+                            {% endif %}
+                            {% trim_string r.user_details.user.username k=20 %} 
+                        </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
                 </li>
@@ -52,7 +74,14 @@
             {% for r in top_ratings_standard %}
                 <li class="leaderboard-player">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
-                         <span class="leaderboard-name"> {% trim_string r.user_details.user.username k=20 %} </span>
+                         <span class="leaderboard-name">
+                            {% if r.user_details.bot %}
+                                <span class="bot-text">
+                                    <b> BOT </b>
+                                </span>
+                            {% endif %}
+                            {% trim_string r.user_details.user.username k=20 %}
+                        </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
                 </li>

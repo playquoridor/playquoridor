@@ -399,8 +399,8 @@ input.input-tab:checked+label.label-tab{
     padding: 10px;
     /*background-color: #b6bccd;*/
     /* background-color: #333333; background-color: #4b6048; */
-    /* background-color: #6a7a68; */
-    background-color: gray;
+    background-color: rgb(135, 134, 134);  /* rgb(68, 86, 74);*/
+    /* background-color: gray; */
     color: #fff;
 }
 
@@ -416,7 +416,7 @@ input.input-tab:checked+label.label-tab{
 }
 
 .player-info{
-    flex: 6;
+    flex: 9;
     text-align: left;
     text-align-last: start; /* Prevent text justification */
 }
@@ -451,12 +451,22 @@ input.input-tab:checked+label.label-tab{
     color: white;
 }
 
+.bot-text{
+    color: rgb(123, 41, 100);
+    font-size: smaller;
+    /*font-size: small;*/
+}
+
 .gray-text{
     color: gray;
 }
 
 .small-font{
     font-size: small;
+}
+
+.smaller-font{
+    font-size: smaller;
 }
 
 .tiny-font{

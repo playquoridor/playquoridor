@@ -8,14 +8,21 @@
     <div class="player-bar top-borders small-font" id="bar-{{opponent.username}}-{{ game.game_id }}">
         <span class="player-info" id="player-{{opponent.username}}-{{ game.game_id }}">
             <span class="dot {%get_player_color game opponent.username%}"></span>
-            <span class="white-text">
-                <a class="user" href="{% url 'profile:show_profile' opponent.username %}">
+            {% if opponent.user.userdetails.bot %}
+                <span class="bot-text">
+                    <b> BOT </b>
+                </span>
+            {% endif %}
+            <a class="user" href="{% url 'profile:show_profile' opponent.username %}">
+                <span class="white-text">
                     <b>{%trim_string opponent.username %}</b>
-                    ({% convert2int opponent.rating %})
-                </a>
-            </span>
-            <span id="{{opponent.username}}_delta_rating-{{game.game_id}}"> {% rating_delta opponent.delta_rating %} </span>
-            <span id="turn_{{opponent.username}}-{{ game.game_id }}"> </span>
+                    <span class="small-font">
+                        ({% convert2int opponent.rating %})
+                    </span>
+                </span>
+            </a>
+            <span id="{{opponent.username}}_delta_rating-{{game.game_id}}" class="smaller-font"> {% rating_delta opponent.delta_rating %} </span>
+            <span id="turn_{{opponent.username}}-{{ game.game_id }}" class="smaller-font"> </span>
         </span>
         <span class="walls-left white-text">
             <span class="dot {%get_online_status opponent.user%}"></span>
@@ -41,14 +48,19 @@
     <div class="player-bar bottom-borders small-font" id="bar-{{player.username}}-{{ game.game_id }}">
         <span class="player-info" id="player-{{player.username}}-{{ game.game_id }}">
             <span class="dot {%get_player_color game player.username%}"></span>
-            <span class="white-text">
-                <a class="user" href="{% url 'profile:show_profile' player.username %}">
+            {% if player.user.userdetails.bot %}
+                <span class="bot-text">
+                    <b> BOT </b>
+                </span>
+            {% endif %}
+            <a class="user" href="{% url 'profile:show_profile' player.username %}">
+                <span class="white-text">
                     <b>{%trim_string player.username %}</b>
                     ({% convert2int player.rating%})
-                </a>
-            </span>
-            <span id="{{player.username}}_delta_rating-{{game.game_id}}"> {% rating_delta player.delta_rating %} </span>
-            <span id="turn_{{player.username}}-{{ game.game_id }}"> </span>
+                </span>
+            </a>
+            <span id="{{player.username}}_delta_rating-{{game.game_id}}" class="smaller-font"> {% rating_delta player.delta_rating %} </span>
+            <span id="turn_{{player.username}}-{{ game.game_id }}" class="smaller-font"> </span>
         </span>
         <span class="walls-left white-text">
             <span class="dot {%get_online_status player.user%}"></span>
