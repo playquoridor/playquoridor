@@ -108,9 +108,10 @@ async def play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_c
     print(f'Bot ({bot_username}) parameters:', parameters)
 
     # Select from available bots
-    uri = f'{protocol}://{server_ip}:8000/ws/game/{game_id}/?token={bot_token}'
+    uri = f'{protocol}://{server_ip}/ws/game/{game_id}/?token={bot_token}'
+    origin='https://playquoridor.online'  # Without origin, when using HTTPS, the connection is refused (CRSF_TRUSTED_ORIGINS: https://docs.djangoproject.com/en/5.1/ref/settings/#csrf-trusted-origins)
     print(f"Connecting to {uri} ...")
-    async with websockets.connect(uri) as websocket:
+    async with websockets.connect(uri, origin=origin) as websocket:
         message = {
             'action': 'request_board_state',
             'player_color': bot_color
@@ -209,7 +210,7 @@ if __name__ == '__main__':
 
         if len(available_bot_uds) > 0 and busy_bot_count < args.max_concurrent_bots:
             # Choose bot
-            control = time_control(client['time'], client['increment'])
+            control = time_control(60*client['time'], client['increment'])
             rating_diffs = []
             for bot_ud in available_bot_uds:
                 R = bot_ud.get_rating(control)

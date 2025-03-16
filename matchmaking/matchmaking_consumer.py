@@ -151,7 +151,7 @@ class MatchMakingConsumer(WebsocketConsumer):
 
                 t = text_data['time']
                 increment = text_data['increment']
-                control = time_control(t, increment)
+                control = time_control(60 * t, increment)
                 self.scope['user'].userdetails.check_or_create_rating(control)
                 rating = self.scope['user'].userdetails.get_rating(control).rating
                 self.rating = rating
