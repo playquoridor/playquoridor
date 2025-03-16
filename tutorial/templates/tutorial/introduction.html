@@ -7,384 +7,536 @@
 
 {% block content %}
 {% load static %}
-<div class="full-width-container">
-    <div class="title"> Tutorial </div>
+<div class="center-content">
+    <div class="tutorial-supcontainer">
+        <div class="title"> Tutorial </div>
 
-    <div class="tutorial-container">
-        <div class="tutorial-subcontainer" id="tutorial-0">
-            <p> Quoridor is an abstract strategy game played on a 9x9 board. It is known for its simple rules yet incredibly <b>deep strategic gameplay</b>. </p>
+        <div class="tutorial-container">
+            <div class="tutorial-subcontainer"> <!-- class="half-centered-container"> -->
+                <!-- FEN format
+                    Pawn positions /
+                    Horizontal fences /
+                    Vertical fences /
+                    Remaining fences per player /
+                    Player turn /
+                    Winning player
+                -->
+                {% with FEN=' / /E1E9/10 10/1' PGN='1. E1 E9 2. E2 E8 3. E3 E7 4. E4 E6 5. E3h D4h 6. D3v E5 7. F4 F4h 8. D1v D5 9. G3h C5 10. G4 C4 11. C2h A2v 12. B2v C5 13. H4 D5 14. A3h H5h 15. F5v F7h 16. H5 E5 17. G5 E6 18. E6h G6v 19. D7v D6 20. G6 D7 21. G7 D8 22. F7 D9 23. E7 E9 24. E8 E7 25. E9' %}
+                    {% include "tutorial/include/tutorial_game.html" with FEN=FEN game_id='introduction_1' player_username='White' opponent_username='Black' opponent_color='black' %}
+                {% endwith %}
+                {% include "tutorial/include/tutorial_arrows.html" with highlights='1. _ A9-B9-C9-D9-E9-F9-G9-H9-I9 2. A1-B1-C1-D1-E1-F1-G1-H1-I1 _ 5. E3h D4-E5-F4 6. D4-F4 D3v 7. E4v-A9-B9-C9-D9-E9-F9-G9-H9-I9 _ 8. _ H4h 11. A1-B1-C1-D1 A2h-E1-F1-G1-H1-I1 12. H4h A1h-A3h 15. _ F7v 16. G6v G6h 19. E7v' game_id='introduction_1' %}
+            </div>
 
-            <p> This tutorial dives into the Quoridor rules. You can move forward by pressing the key → of your keyboard or using the arrows below the board. </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-1">
-            <p>Players start with their pawns in the center of the top and bottom edges of the board.</p>
+            <div class="tutorial-subcontainer" id="tutorial-0">
+                <p> Quoridor is an abstract strategy game played on a 9x9 board. It is known for its simple rules yet incredibly <b>deep strategic gameplay</b>. </p>
 
-            <p>As a player, your goal is to reach the opposite side of the board with your pawn:</p>
+                <p> This tutorial dives into the Quoridor rules. You can move forward by pressing the key → of your keyboard or using the arrows below the board. </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-1">
+                <p>Players start with their pawns in the center of the top and bottom edges of the board.</p>
 
-            <ul>
-                <li>Player <b>White</b> wins the game when their pawn reaches one of the <b>top</b> squares.</li>
-            </ul>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-2">
-            <p>Players start with their pawns in the center of the top and bottom edges of the board.</p>
+                <p>As a player, your goal is to reach the opposite side of the board with your pawn:</p>
 
-            <p>As a player, your goal is to reach the opposite side of the board with your pawn:</p>
+                <ul>
+                    <li>Player <b>White</b> wins the game when their pawn reaches one of the <b>top</b> squares.</li>
+                </ul>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-2">
+                <p>Players start with their pawns in the center of the top and bottom edges of the board.</p>
 
-            <ul>
-                <li>Player <b>White</b> wins the game when their pawn reaches one of the <b>top</b> squares.</li>
-                <li>Player <b>Black</b> wins the game when their pawn reaches one of the <b>bottom</b> squares.</li>
-            </ul>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-3">
-            <p> Players take turns. On their turn, a player can either: </p>
-            <ol>
-                <li>Move their pawn to an adjacent space, <i>or</i></li>
-                <li>Place a wall on the board to block their opponent's path </li>
-            </ol>
+                <p>As a player, your goal is to reach the opposite side of the board with your pawn:</p>
 
-            <p>Player <b>White</b> starts the game.</p>
-            <p>Let's move the pawns closer to the center of the board.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-4">
-            <p> Players take turns. On their turn, a player can either: </p>
-            <ol>
-                <li>Move their pawn to an adjacent space, <i>or</i></li>
-                <li>Place a wall on the board to block their opponent's path </li>
-            </ol>
+                <ul>
+                    <li>Player <b>White</b> wins the game when their pawn reaches one of the <b>top</b> squares.</li>
+                    <li>Player <b>Black</b> wins the game when their pawn reaches one of the <b>bottom</b> squares.</li>
+                </ul>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-3">
+                <p> Players take turns. On their turn, a player can either: </p>
+                <ol>
+                    <li>Move their pawn to an adjacent space, <i>or</i></li>
+                    <li>Place a wall on the board to block their opponent's path </li>
+                </ol>
 
-            <p>Player <b>White</b> starts the game.</p>
-            <p>Let's move the pawns closer to the center of the board.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-5">
-            <p> Players take turns. On their turn, a player can either: </p>
-            <ol>
-                <li>Move their pawn to an adjacent space, <i>or</i></li>
-                <li>Place a wall on the board to block their opponent's path </li>
-            </ol>
+                <p>Player <b>White</b> starts the game.</p>
+                <p>Let's move the pawns closer to the center of the board.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-4">
+                <p> Players take turns. On their turn, a player can either: </p>
+                <ol>
+                    <li>Move their pawn to an adjacent space, <i>or</i></li>
+                    <li>Place a wall on the board to block their opponent's path </li>
+                </ol>
 
-            <p>Player <b>White</b> starts the game.</p>
-            <p>Let's move the pawns closer to the center of the board.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-6">
-            <p> Players take turns. On their turn, a player can either: </p>
-            <ol>
-                <li>Move their pawn to an adjacent space, <i>or</i></li>
-                <li>Place a wall on the board to block their opponent's path </li>
-            </ol>
+                <p>Player <b>White</b> starts the game.</p>
+                <p>Let's move the pawns closer to the center of the board.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-5">
+                <p> Players take turns. On their turn, a player can either: </p>
+                <ol>
+                    <li>Move their pawn to an adjacent space, <i>or</i></li>
+                    <li>Place a wall on the board to block their opponent's path </li>
+                </ol>
 
-            <p>Player <b>White</b> starts the game.</p>
-            <p>Let's move the pawns closer to the center of the board.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-7">
-            <p> Players take turns. On their turn, a player can either: </p>
-            <ol>
-                <li>Move their pawn to an adjacent space, <i>or</i></li>
-                <li>Place a wall on the board to block their opponent's path </li>
-            </ol>
+                <p>Player <b>White</b> starts the game.</p>
+                <p>Let's move the pawns closer to the center of the board.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-6">
+                <p> Players take turns. On their turn, a player can either: </p>
+                <ol>
+                    <li>Move their pawn to an adjacent space, <i>or</i></li>
+                    <li>Place a wall on the board to block their opponent's path </li>
+                </ol>
 
-            <p>Player <b>White</b> starts the game.</p>
-            <p>Let's move the pawns closer to the center of the board.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-8">
-            <!--<p> Players take turns. On their turn, a player can either move their pawn to an adjacent space or place a wall on the board to block their opponent's path. Player <b>White</b> starts the game. </p>
+                <p>Player <b>White</b> starts the game.</p>
+                <p>Let's move the pawns closer to the center of the board.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-7">
+                <p> Players take turns. On their turn, a player can either: </p>
+                <ol>
+                    <li>Move their pawn to an adjacent space, <i>or</i></li>
+                    <li>Place a wall on the board to block their opponent's path </li>
+                </ol>
 
-            <p>Let's move the pawns closer to the center of the board.</p> -->
-            <p>It's player <b>White</b>'s turn. Let's put a horizontal wall behind the pawn.</p>
-            <p>
-                As we shall see, this is often a good strategy, but there are other viable options.
-            </p>
-            <p>
-                Each player can place up to 10 walls. Use them wisely.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-9">
-            Walls restrict the mobility of pawns. Player <b>White</b> can now only move to the squares highlighted in red.
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-10">
-            <p>
-                It's player <b>Black</b>'s turn. Player <b>Black</b> now places a wall in front of player <b>White</b>'s pawn... what are their intentions?
-            </p>
+                <p>Player <b>White</b> starts the game.</p>
+                <p>Let's move the pawns closer to the center of the board.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-8">
+                <!--<p> Players take turns. On their turn, a player can either move their pawn to an adjacent space or place a wall on the board to block their opponent's path. Player <b>White</b> starts the game. </p>
 
-            <p>
-                Now, the <b>White</b> pawn can only move to the two squares highlighted in red.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-11">
-            <p>
-                It's player <b>White</b>'s turn. Let's put a vertical wall at the left of the pawn.
-            </p>
+                <p>Let's move the pawns closer to the center of the board.</p> -->
+                <p>It's player <b>White</b>'s turn. Let's put a horizontal wall behind the pawn.</p>
+                <p>
+                    As we shall see, this is often a good strategy, but there are other viable options.
+                </p>
+                <p>
+                    Each player can place up to 10 walls. Use them wisely.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-9">
+                Walls restrict the mobility of pawns. Player <b>White</b> can now only move to the squares highlighted in red.
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-10">
+                <p>
+                    It's player <b>Black</b>'s turn. Player <b>Black</b> now places a wall in front of player <b>White</b>'s pawn... what are their intentions?
+                </p>
 
-            <p>
-                Importantly, walls span two squares and they <b>cannot</b> overlap with each other.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-12">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves forward.
-            </p>
+                <p>
+                    Now, the <b>White</b> pawn can only move to the two squares highlighted in red.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-11">
+                <p>
+                    It's player <b>White</b>'s turn. Let's put a vertical wall at the left of the pawn.
+                </p>
 
-            <p>
-                Could <b>Black</b> have placed a wall at the right of <b>White</b>'s pawn?
-            </p>
+                <p>
+                    Importantly, walls span two squares and they <b>cannot</b> overlap with each other.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-12">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves forward.
+                </p>
 
-            <p>
-                No, that is not possible. In Quoridor, pawns <b>cannot be trapped</b>. For each pawn, there must always exist at least one path to one of their target squares.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-13">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-14">
-            <p>
-                Player <b>Black</b> places a wall in front of <b>White</b>'s pawn.
-            </p>
+                <p>
+                    Could <b>Black</b> have placed a wall at the right of <b>White</b>'s pawn?
+                </p>
 
-            <p>
-                Player <b>White</b> should be careful. Can you think why?
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-15">
-            <p>
-                Player <b>White</b> places a vertical wall below.
-            </p>
+                <p>
+                    No, that is not possible. In Quoridor, pawns <b>cannot be trapped</b>. For each pawn, there must always exist at least one path to one of their target squares.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-13">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-14">
+                <p>
+                    Player <b>Black</b> places a wall in front of <b>White</b>'s pawn.
+                </p>
 
-            <p>
-                This is an important play, because the potential wall highlighted in red would have made <b>White</b>'s path significantly longer. After <b>White</b>'s move, putting that wall is no longer possible.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-16">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the left.
-            </p>
+                <p>
+                    Player <b>White</b> should be careful. Can you think why?
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-15">
+                <p>
+                    Player <b>White</b> places a vertical wall below.
+                </p>
+
+                <p>
+                    This is an important play, because the potential wall highlighted in red would have made <b>White</b>'s path significantly longer. After <b>White</b>'s move, putting that wall is no longer possible.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-16">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the left.
+                </p>
+            </div>
+
+            <div class="tutorial-subcontainer hidden" id="tutorial-17">
+                <p>
+                    It's player <b>White</b>'s turn. Let's put a horizontal wall to prevent <b>Black</b> from making our path longer.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-18">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the left.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-19">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-20">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves down.
+                </p>
+
+                <p>
+                    Player <b>Black</b> is dangerously approaching their goal. Can we prevent it?
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-21">
+                <p>
+                    Yes we can. Let's use two horizontal walls to block <b>Black</b>'s most direct path.
+                </p>
+                <p> If we achieve this, the <b>Black</b> pawn will need to go around via a longer path.</p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-22">
+                <p>
+                    <b>Black</b> would love to put a wall that blocks their longer path... But this is not possible because it would also trap <b>White</b>'s pawn.
+                </p>
+                <p>
+                    Instead, <b>Black</b> places a vertical wall to prevent us from blocking their shortest path.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-23">
+                <p>
+                    Unfortunately for <b>Black</b>, the last vertical wall is not enough.
+                </p>
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> places another vertical wall parallel to <b>Black</b>'s wall. This way, <b>Black</b>'s shortest path can be blocked by either one of the horizontal walls highlighted in red.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-24">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves up, giving up on the shortest path.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-25">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-26">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the right.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-27">
+                <p>
+                    It's player <b>White</b>'s turn. If we move the pawn up, player <b>Black</b> will then be able to block their longest path.
+                </p>
+
+                <p>
+                    To keep it simple, player <b>White</b> blocks <b>Black</b>'s shortest path.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-28">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> places a horizontal wall.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-29">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> places a vertical wall.
+                </p>
+                <p>
+                    This is a nice play because:
+                </p>
+                <ul>
+                    <li>It makes <b>Black</b>'s path longer, <i>and</i></li>
+                    <li>It shrinks the possibilities of making <b>White</b>'s path longer </li>
+                </ul>
+                <p>
+                    To continue with their plan, <b>White</b> would like to put the vertical wall highlighted in red.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-30">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> places a horizontal wall.
+                </p>
+                <p>
+                <b>Black</b> now intends to put the wall highlighted in red.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-31">
+                <p>
+                    It's player <b>White</b>'s turn. Putting the horizontal wall highlighted in red might be counterproductive. Can you see why?
+                </p>
+                <p>
+                    Instead, <b>White</b> moves the pawn forward.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-32">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the right.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-33">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> pawn moves to the left.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-34">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> pawn moves up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-35">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> places a horizontal wall.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-36">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> places a vertical wall.
+                </p>
+                <p>
+                    This move prevents <b>White</b> from placing the wall highlighted in red.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-37">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> places a vertical wall.
+                </p>
+                <p>
+                    This is the last wall of <b>White</b>. This wall ensures a smooth victory.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-38">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn to the left.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-39">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-40">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-41">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-42">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-43">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn to the left.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-44">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-45">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn to the left.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-46">
+                <p>
+                    It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn to the right
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-47">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-48">
+                <p>
+                    It's player <b>Black</b>'s turn.
+                </p>
+                <p>
+                    <b>White</b>'s pawn is below <b>Black</b>'s pawn. In this case, <b>Black</b> jumps <b>White</b>'s pawn.
+                </p>
+            </div>
+            <div class="tutorial-subcontainer hidden" id="tutorial-49">
+                <p>
+                    It's player <b>White</b>'s turn. <b>White</b> moves the pawn up and wins the game.
+                </p>
+                <p>
+                    Well done on completing the tutorial!
+                </p>
+            </div>
         </div>
 
-        <div class="tutorial-subcontainer hidden" id="tutorial-17">
-            <p>
-                It's player <b>White</b>'s turn. Let's put a horizontal wall to prevent <b>Black</b> from making our path longer.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-18">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the left.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-19">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-20">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves down.
-            </p>
+        <script
+            data-highlights="{{ highlights }}"
+            data-gameid="{{ game_id }}"
+        >
+            function updateTutorial(prevId, currId){
+                const prevDiv = document.getElementById('tutorial-' + String(prevId));
+                prevDiv.classList.add('hidden');
+                const nextDiv = document.getElementById('tutorial-' + String(currId));
+                nextDiv.classList.remove('hidden');
 
-            <p>
-                Player <b>Black</b> is dangerously approaching their goal. Can we prevent it?
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-21">
-            <p>
-                Yes we can. Let's use two horizontal walls to block <b>Black</b>'s most direct path.
-            </p>
-            <p> If we achieve this, the <b>Black</b> pawn will need to go around via a longer path.</p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-22">
-            <p>
-                <b>Black</b> would love to put a wall that blocks their longer path... But this is not possible because it would also trap <b>White</b>'s pawn.
-            </p>
-            <p>
-                Instead, <b>Black</b> places a vertical wall to prevent us from blocking their shortest path.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-23">
-            <p>
-                Unfortunately for <b>Black</b>, the last vertical wall is not enough.
-            </p>
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> places another vertical wall parallel to <b>Black</b>'s wall. This way, <b>Black</b>'s shortest path can be blocked by either one of the horizontal walls highlighted in red.
-            </p>
-        </div>
-         <div class="tutorial-subcontainer hidden" id="tutorial-24">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves up, giving up on the shortest path.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-25">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> pawn moves to the right.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-26">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the right.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-27">
-            <p>
-                It's player <b>White</b>'s turn. If we move the pawn up, player <b>Black</b> will then be able to block their longest path.
-            </p>
+                // Reset highlights
+                for(const element of board.children)
+                    element.classList.remove('highlighted');
 
-            <p>
-                To keep it simple, player <b>White</b> blocks <b>Black</b>'s shortest path.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-28">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> places a horizontal wall.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-29">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> places a vertical wall.
-            </p>
-            <p>
-                This is a nice play because:
-            </p>
-            <ul>
-                <li>It makes <b>Black</b>'s path longer, <i>and</i></li>
-                <li>It shrinks the possibilities of making <b>White</b>'s path longer </li>
-            </ul>
-            <p>
-                To continue with their plan, <b>White</b> would like to put the vertical wall highlighted in red.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-30">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> places a horizontal wall.
-            </p>
-            <p>
-               <b>Black</b> now intends to put the wall highlighted in red.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-31">
-            <p>
-                It's player <b>White</b>'s turn. Putting the horizontal wall highlighted in red might be counterproductive. Can you see why?
-            </p>
-            <p>
-                Instead, <b>White</b> moves the pawn forward.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-32">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves to the right.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-33">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> pawn moves to the left.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-34">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> pawn moves up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-35">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> places a horizontal wall.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-36">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> places a vertical wall.
-            </p>
-            <p>
-                This move prevents <b>White</b> from placing the wall highlighted in red.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-37">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> places a vertical wall.
-            </p>
-            <p>
-                This is the last wall of <b>White</b>. This wall ensures a smooth victory.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-38">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn to the left.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-39">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-40">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-41">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-42">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-43">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn to the left.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-44">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-45">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn to the left.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-46">
-            <p>
-                It's player <b>Black</b>'s turn. <b>Black</b> moves the pawn to the right
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-47">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn up.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-48">
-            <p>
-                It's player <b>Black</b>'s turn.
-            </p>
-            <p>
-                <b>White</b>'s pawn is below <b>Black</b>'s pawn. In this case, <b>Black</b> jumps <b>White</b>'s pawn.
-            </p>
-        </div>
-        <div class="tutorial-subcontainer hidden" id="tutorial-49">
-            <p>
-                It's player <b>White</b>'s turn. <b>White</b> moves the pawn up and wins the game.
-            </p>
-            <p>
-                Well done on completing the tutorial!
-            </p>
-        </div>
+                // Highlight square/fences
+                if (highlightsDict[currId] !== undefined) {
+                    const hightlightsSplit = highlightsDict[currId].split('-');
+                    for (const v of hightlightsSplit) {
+                        if (v.length == 2) { // Square
+                            const row = String(parseInt(v[1]) - 1);
+                            const col = String(v.charCodeAt(0) - 65);
 
-        <div class="tutorial-subcontainer"> <!-- class="half-centered-container"> -->
-            <!-- FEN format
-                Pawn positions /
-                Horizontal fences /
-                Vertical fences /
-                Remaining fences per player /
-                Player turn /
-                Winning player
-            -->
-            {% with FEN=' / /E1E9/10 10/1' PGN='1. E1 E9 2. E2 E8 3. E3 E7 4. E4 E6 5. E3h D4h 6. D3v E5 7. F4 F4h 8. D1v D5 9. G3h C5 10. G4 C4 11. C2h A2v 12. B2v C5 13. H4 D5 14. A3h H5h 15. F5v F7h 16. H5 E5 17. G5 E6 18. E6h G6v 19. D7v D6 20. G6 D7 21. G7 D8 22. F7 D9 23. E7 E9 24. E8 E7 25. E9' %}
-                {% include "tutorial/include/tutorial_game.html" with FEN=FEN game_id='introduction_1' player_username='White' opponent_username='Black' opponent_color='black' %}
-            {% endwith %}
-            {% include "tutorial/include/tutorial_arrows.html" with highlights='1. _ A9-B9-C9-D9-E9-F9-G9-H9-I9 2. A1-B1-C1-D1-E1-F1-G1-H1-I1 _ 5. E3h D4-E5-F4 6. D4-F4 D3v 7. E4v-A9-B9-C9-D9-E9-F9-G9-H9-I9 _ 8. _ H4h 11. A1-B1-C1-D1 A2h-E1-F1-G1-H1-I1 12. H4h A1h-A3h 15. _ F7v 16. G6v G6h 19. E7v' game_id='introduction_1' %}
-        </div>
+                            const targetSquareId = 's' + '-' + row + '-' + col;
+                            const targetSquare = board.querySelector('[square-id=' + targetSquareId + ']');
+                            //console.log(targetSquareId, targetSquare)
+                            targetSquare.classList.add('highlighted');
+                        } else { // Fence
+                            const row = String(parseInt(v[1]) - 1);
+                            const col = String(v.charCodeAt(0) - 65);
+                            const wallType = v[2];
+                            const subwallId = wallType + '-' + row + '-' + col + '-' + 'true';
+                            const subwall = board.querySelector('[subwall-id=' + subwallId + ']');
+                            const highlightFenceEvent = new Event('highlightFenceEvent');
+                            subwall.dispatchEvent(highlightFenceEvent);
+                        }
+                    }
+                }
+            }
+
+            function convertHighlightsToDict(highlights) {
+                const regex = /(\d+)\.[\s]*([^\s]+(-\w+)*[\s]*[^\s]+(-\w+)*)/g;
+                //const regex = /(\d+)\.[\s]*(([^\s])*)/g;
+                // const regex = /(\d+)\.\s_?\s?([^\s]+(?:\s\w+-\w+)?)/g;
+                let match;
+                const result = {};
+
+                while ((match = regex.exec(highlights)) !== null) {
+                    const key = parseInt(match[1], 10) - 1;
+                    const values = match[2].split(' ');
+                    if (values.length === 1)
+                        //result[key] = ['', values[0]]
+                        result[key*2] = values[0]
+                    else {
+                        if (values[0] !== '_')
+                            result[key * 2] = values[0];
+                        if (values[1] !== '_')
+                            result[key * 2 + 1] = values[1];
+                    }
+                }
+                //console.log('Input', highlights, 'Res', result);
+                return result;
+                }
+
+            // Create highlights dict
+            const highlights = '1. _ A9-B9-C9-D9-E9-F9-G9-H9-I9 2. A1-B1-C1-D1-E1-F1-G1-H1-I1 _ 5. E3h D4-E5-F4 6. D4-F4 D3v 7. E4v-A9-B9-C9-D9-E9-F9-G9-H9-I9 _ 8. _ H4h 11. A1-B1-C1-D1 A2h-E1-F1-G1-H1-I1 12. H4h A1h-A3h 15. _ F7v 16. G6v G6h 19. E7v' // document.currentScript.dataset.highlights;
+            const highlightsDict = convertHighlightsToDict(highlights);
+            const gameId = 'introduction_1'; // document.currentScript.dataset.gameid;
+            const board = document.getElementById('board-'+gameId);
+
+            // Tutorial slides
+            var tutorialId = 0;
+            const total = document.querySelectorAll("div[id^='tutorial']").length;
+
+            // Init story
+            function init(){
+                const prevId = tutorialId;
+                tutorialId = 0;
+                updateTutorial(prevId, tutorialId);
+            }
+
+            // Forward story
+            function next(){
+                if (tutorialId < total - 1) {
+                    tutorialId += 1;
+                    updateTutorial(tutorialId - 1, tutorialId);
+                }
+            }
+
+            // Backward story
+            function prev(){
+                if (tutorialId > 0) {
+                    tutorialId -= 1;
+                    updateTutorial(tutorialId + 1, tutorialId);
+                }
+            }
+
+            // End story
+            function end() {
+                const prevId = tutorialId;
+                tutorialId = total - 1;
+                updateTutorial(prevId, tutorialId);
+            }
+
+            // Set up buttons
+            const analysisInit = document.getElementById('analysis-init-2');
+            analysisInit.addEventListener('click', function (event){
+                document.getElementById('analysis-init').click();
+                // Init story
+                init();
+            });
+
+            const analysisForward = document.getElementById('analysis-forward-2');
+            analysisForward.addEventListener('click', function (event){
+                document.getElementById('analysis-forward').click();
+                next();
+            });
+
+            const analysisBackward = document.getElementById('analysis-backward-2');
+            analysisBackward.addEventListener('click',  function (event){
+                document.getElementById('analysis-backward').click();
+                prev();
+            });
+
+            const analysisEnd = document.getElementById('analysis-end-2');
+            analysisEnd.addEventListener('click', function (event){
+                document.getElementById('analysis-end').click();
+                end();
+            });
+            //analysisInit.click();
+
+            document.addEventListener('keydown', function (e){
+                e = e || window.event;
+
+                if (e.keyCode == '38')// up arrow
+                    end();
+                else if (e.keyCode == '40')// down arrow
+                    init();
+                else if (e.keyCode == '37') // left arrow
+                    prev();
+                else if (e.keyCode == '39') // right arrow
+                    next();
+            });
+
+            window.onload = function() {
+                console.log('B', board)
+                init();
+            };
+
+
+        </script>
+
     </div>
-
 </div>
-
 {% endblock %}

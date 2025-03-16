@@ -25,7 +25,16 @@
                         {{query_user.username}}
                     </b>
                 </div>
-
+                <div class="center">
+                    <script defer src="{% static 'profile/js/plot_ratings_evolution.js' %}"
+                            data-ratingstable="{{ratings_table}}"
+                            data-ratingscolumns="{{ratings_columns}}"
+                    ></script> <!--- safely passing arguments to JS --->
+                    <div id="chart_container" ></div>
+                </div>
+            </div>
+            
+            <div class="horizontal-container-box center" style="padding-bottom: 0;">
                 {% localtime on %}
                     Last login: {% get_time_ago query_user.last_login %}
                     <br>
@@ -34,14 +43,6 @@
 
                 <br>
                 Number of games played: {{n_games}}
-            </div>
-            <div class="horizontal-container-box" style="padding-bottom: 0;">
-                <div class="center"> <b> Rating evolution </b> </div>
-                <script defer src="{% static 'profile/js/plot_ratings_evolution.js' %}"
-                        data-ratingstable="{{ratings_table}}"
-                        data-ratingscolumns="{{ratings_columns}}"
-                ></script> <!--- safely passing arguments to JS --->
-                <div id="chart_container" style="display: inline-block; margin: 0 auto;"></div>
             </div>
         </div>
 

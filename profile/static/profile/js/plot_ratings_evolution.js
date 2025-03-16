@@ -52,8 +52,8 @@ if (ratingList.length > 0){
             'chartArea': {'right': 50,
                 'left': 50,
                 'top': 5,
-                'width': '90%',
-                'height': '70%'},
+                'width': '100%',
+                'height': '80%'},
             hAxis: {
                 format: 'd/M/yy',
                 //ticks: getTicks(data),

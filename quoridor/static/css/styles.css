@@ -54,7 +54,7 @@ h1 {
     /* width: calc(33%); /* Adjust the width as needed */
 }
 
-.full-width-container{
+.tutorial-supcontainer{
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -62,7 +62,15 @@ h1 {
     margin: 10px;
     gap: 0px;
     padding: 5px;
+    max-width: 400px;
 }
+
+.center-content {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    height: 100%; /* Ensures it fills the parent column */
+  }
 
 .half-centered-container{
     width: 50%;
@@ -88,11 +96,12 @@ h1 {
 }
 
 .tutorial-container{
-    display: flex; /* Use flexbox */
+    min-width: 290px;
+    max-width: 600px;
 }
 
 .tutorial-subcontainer{
-    flex: 1;
+    /*flex: 1;*/
     /*border: 1px solid #ccc;*/
     padding: 10px;
     margin: 5px;
@@ -614,9 +623,9 @@ img {
 Profile
  */
 .horizontal-container {
-    position: relative;  /* Allows overlay of waiting box */
+    /* position: relative; Allows overlay of waiting box */
     display: flex;
-    /* flex-direction: column; */
+    flex-direction: column;
     align-items: stretch;
     margin-bottom: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow */
