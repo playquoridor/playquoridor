@@ -81,6 +81,7 @@ class UserDetails(models.Model):
         R = self.get_rating_query(control)
         if not R.exists():
             R = self.create_rating(control)
+            return R
         if len(R) > 0:
             return R[0]
         return
