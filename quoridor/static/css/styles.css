@@ -105,6 +105,30 @@ h1 {
         flex-direction: column; /* Change flex-direction to column for smaller screens */
         align-items: center; /* Center the elements vertically */
     }
+
+    .sub-container{
+        min-height: 0 !important;
+        min-width: 290px;
+    }
+}
+
+@media only screen and (min-width:768px) and (max-width: 1100px) {
+    .game {
+        /* Override width for smaller screens */
+        width: 47% !important;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .game-list {
+        /*margin-left: 0px; /* Add some margin between the board and the player box */
+        flex-direction: column; /* Change flex-direction to column for smaller screens */
+        align-items: center; /* Center the elements vertically */
+    }
+    .game {
+        /* Override width for smaller screens */
+        width: 100% !important;
+    }
 }
 
 /*
