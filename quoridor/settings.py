@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'profile.apps.ProfileConfig',
     'challenge.apps.ChallengeConfig',
     'matchmaking.apps.MatchmakingConfig',
+    'bot.apps.BotConfig',
     'register.apps.RegisterConfig',
     'tutorial.apps.TutorialConfig',
     'quoridor.apps.QuoridorConfig',
@@ -49,7 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'crispy_forms',
-    'crispy_bootstrap4'
+    'crispy_bootstrap4',
+    'rest_framework',
+    'rest_framework.authtoken'
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -125,6 +128,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Rest framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
