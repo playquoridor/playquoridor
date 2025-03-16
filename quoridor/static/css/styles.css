@@ -99,7 +99,7 @@ h1 {
 }
 
 /* Responsive */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 1100px) {
     .middle-container {
         /*margin-left: 0px; /* Add some margin between the board and the player box */
         flex-direction: column; /* Change flex-direction to column for smaller screens */
@@ -228,6 +228,10 @@ Text
     text-align: center;
     margin: 0px 15px;
     font-weight: bold;
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
