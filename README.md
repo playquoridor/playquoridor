@@ -26,6 +26,8 @@ pip install pyquoridor
 pip install pandas
 pip install channels-redis
 pip install psycopg2-binary
+pip install websockets
+pip install djangorestframework djangorestframework-simplejwt
 ```
 
 Install redis-server
@@ -121,6 +123,19 @@ ud = UserDetails(user=user)
 ud.save()
 ```
 
+### Creating bots
+```
+> python3 manage.py shell
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from game.models import UserDetails
+user = User.objects.create_user(username='Bot', password='bot_password')
+ud = UserDetails(user=user, bot=True)
+ud.save()
+token = Token.objects.create(user=user)
+token.save()
+```
+
 ### Email backend for user registration (optional)
 
 Set up email backend (for sending user activation emails). In `settings.py` modify the following information
@@ -157,10 +172,15 @@ redis-server --port 6379
 
 Run matchmaking master in a separate process
 ```
-python3 -m matchmaking.matchmaking_master matchmaking_master.py
+python3 -m matchmaking.matchmaking_master
+```
+
+Run bots in a separate proess
+```
+python3 -m bot.bot
 ```
 
 Run server
 ```
-python manage.py runserver
+python3 manage.py runserver
 ```
