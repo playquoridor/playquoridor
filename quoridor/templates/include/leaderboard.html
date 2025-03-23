@@ -23,8 +23,10 @@
                                 <span class="bot-text">
                                     <b> BOT </b>
                                 </span>
+                                {% trim_string r.user_details.user.username k=12 %}
+                            {% else %}
+                                {% trim_string r.user_details.user.username k=15 %}
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=50 %}
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
@@ -41,8 +43,10 @@
                                 <span class="bot-text">
                                     <b> BOT </b>
                                 </span>
+                                {% trim_string r.user_details.user.username k=12 %}
+                            {% else %}
+                                {% trim_string r.user_details.user.username k=15 %}
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=50 %}
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
@@ -59,8 +63,10 @@
                                 <span class="bot-text">
                                     <b> BOT </b>
                                 </span>
+                                {% trim_string r.user_details.user.username k=12 %}
+                            {% else %}
+                                {% trim_string r.user_details.user.username k=15 %}
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=50 %} 
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
