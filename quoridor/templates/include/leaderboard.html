@@ -12,12 +12,10 @@
         <label class="label-tab" for="blitz-tab">Blitz</label>
         <input class="input-tab" id="rapid-tab" type="radio" name="tabs">
         <label class="label-tab" for="rapid-tab">Rapid</label>
-        <input class="input-tab" id="standard-tab" type="radio" name="tabs">
-        <label class="label-tab" for="standard-tab">Standard</label>
 
         <section class="section-tab" id="bullet-content">
             {% for r in top_ratings_bullet %}
-                <li class="leaderboard-player">
+                <li class="leaderboard-player {% if r.user_details.bot %}bot-player{% endif %}">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
                         <span class="leaderboard-name">
                             <!-- <span class="dot {%get_online_status r.user_details.user %}"></span> -->
@@ -26,7 +24,7 @@
                                     <b> BOT </b>
                                 </span>
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=20 %}
+                            {% trim_string r.user_details.user.username k=50 %}
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
@@ -36,7 +34,7 @@
 
         <section class="section-tab" id="blitz-content">
             {% for r in top_ratings_blitz %}
-                <li class="leaderboard-player">
+                <li class="leaderboard-player {% if r.user_details.bot %}bot-player{% endif %}">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
                         <span class="leaderboard-name">
                             {% if r.user_details.bot %}
@@ -44,7 +42,7 @@
                                     <b> BOT </b>
                                 </span>
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=20 %}
+                            {% trim_string r.user_details.user.username k=50 %}
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
@@ -54,7 +52,7 @@
 
         <section class="section-tab" id="rapid-content">
             {% for r in top_ratings_rapid %}
-                <li class="leaderboard-player">
+                <li class="leaderboard-player {% if r.user_details.bot %}bot-player{% endif %}">
                     <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
                         <span class="leaderboard-name">
                             {% if r.user_details.bot %}
@@ -62,31 +60,41 @@
                                     <b> BOT </b>
                                 </span>
                             {% endif %}
-                            {% trim_string r.user_details.user.username k=20 %} 
+                            {% trim_string r.user_details.user.username k=50 %} 
                         </span>
                     </a>
                     <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
                 </li>
             {% endfor %}
         </section>
-
-        <section class="section-tab" id="blitz-standard">
-            {% for r in top_ratings_standard %}
-                <li class="leaderboard-player">
-                    <a class="user" href="{% url 'profile:show_profile' r.user_details.user.username %}">
-                         <span class="leaderboard-name">
-                            {% if r.user_details.bot %}
-                                <span class="bot-text">
-                                    <b> BOT </b>
-                                </span>
-                            {% endif %}
-                            {% trim_string r.user_details.user.username k=20 %}
-                        </span>
-                    </a>
-                    <span class="leaderboard-rating"> {% convert2int r.rating %} </span>
-                </li>
-            {% endfor %}
-        </section>
-
     </div>
+
+    <!-- Toggle Switch -->
+    <label class="switch">
+        <input type="checkbox" id="toggle-bots">
+        <span class="slider round"></span>
+    </label>
+    <span class="toggle-label">Bots</span>
 </div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toggleCheckbox = document.getElementById("toggle-bots");
+        const toggleLabel = document.querySelector(".toggle-label");
+        const botPlayers = document.querySelectorAll(".bot-player");
+    
+        // Hide bots by default
+        botPlayers.forEach(player => {
+            player.style.display = "none";
+        });
+    
+        toggleCheckbox.addEventListener("change", function () {
+            botPlayers.forEach(player => {
+                player.style.display = this.checked ? "flex" : "none";
+            });
+    
+            toggleLabel.textContent = this.checked ? "Bots" : "Bots";
+        });
+    });
+</script>
