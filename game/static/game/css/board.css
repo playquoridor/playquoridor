@@ -71,8 +71,8 @@ div + div {
 
 .board {
     display: grid;  /*   display: inline-grid; */
-    grid-template-columns:  repeat(8, minmax(1vw, 16vw) 5px) minmax(1vw, 16vw);  /* repeat(8, minmax(1vw, 16vw) minmax(0.01vw, 0.8vw)) minmax(1vw, 16vw); */
-    grid-template-rows: repeat(8, minmax(1vw, 16vw) 5px) minmax(1vw, 16vw); /* repeat(8, 4vw 0.75vw) 4vw; */
+    grid-template-columns:  repeat(8, minmax(1vw, 16vw) 7px) minmax(1vw, 16vw);  /* repeat(8, minmax(1vw, 16vw) minmax(0.01vw, 0.8vw)) minmax(1vw, 16vw); */
+    grid-template-rows: repeat(8, minmax(1vw, 16vw) 7px) minmax(1vw, 16vw); /* repeat(8, 4vw 0.75vw) 4vw; */
     /* padding: 0; */
     /* grid-area: resize; */
     /* flex-shrink: 1; */

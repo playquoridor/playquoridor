@@ -303,6 +303,9 @@ class QuoridorGame(SluggedModel):
     def time_control(self):
         return time_control(self.total_time_per_player, self.increment)
 
+    def number_of_moves(self):
+        return self.move_set.count()
+
     def latest_timepoint(self):
         """
         if self.move_set.exists():
@@ -312,7 +315,7 @@ class QuoridorGame(SluggedModel):
         return t
         """
         t = None
-        if self.move_set.count() > 1:
+        if self.number_of_moves() > 1:
             # If two moves have been played
             t = self.move_set.latest('move_time').move_time
         return t

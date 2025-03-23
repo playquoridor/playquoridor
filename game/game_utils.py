@@ -1,5 +1,7 @@
 from .models import QuoridorGame, Player
 from django.contrib.auth.models import User
+import threading
+from datetime import timedelta
 import random
 
 
@@ -28,6 +30,16 @@ def check_rating_integrity_or_update(player_username):
     except Player.DoesNotExist:
         pass
 
+
+def abort_game_if_not_started(game_id):
+    try:
+        game = QuoridorGame.objects.get(pk=game_id)
+        if game.number_of_moves() < 2:
+            print(f"Aborting game {game_id} because it didn't start. Number of moves", game.number_of_moves())
+            game.abort = True
+            game.save()
+    except QuoridorGame.DoesNotExist:
+        pass
 
 def create_game(player_username, opponent_username, player_color, time=None, increment=None):
     # Important: Assumes players are not currently playing a game
@@ -78,5 +90,9 @@ def create_game(player_username, opponent_username, player_color, time=None, inc
                                           volatility=R_black.volatility)
     player_white.save()
     player_black.save()
+
+    # Automatic abortion of game if not started
+    timer = threading.Timer(120, abort_game_if_not_started, args=(game.game_id,))
+    timer.start()  # Start countdown
 
     return game

@@ -11,9 +11,12 @@ from pyquoridor.utils import print_board
 from pyquoridor.exceptions import *
 from rest_framework.authtoken.models import Token
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import django.utils.timezone as djtz
 from collections import defaultdict
+from game.game_utils import abort_game_if_not_started
+# from django_tasks import task
+import threading
 import time
 
 
@@ -28,7 +31,6 @@ class GameConsumer(WebsocketConsumer):
             token_key = None
             query_string = self.scope["query_string"].decode()
             split = query_string.split("&")
-            print('Query string', query_string, split)
             if len(split) > 0:
                 for param in split:
                     if '=' in param:
@@ -111,46 +113,47 @@ class GameConsumer(WebsocketConsumer):
             print('Board logic FEN', self.board_logic.partial_FEN())
             print('DB FEN', self.game.FEN().replace(' ', ''))
             self.reset_board_logic_from_db()
+        
+        if self.game.number_of_moves() < 2:
+            self.timer = threading.Timer(60, self.abort_game_if_not_started)  # Abort after 10 sec
+            self.timer.start()  # Start countdown
 
-    def is_spectator(self):
-        return self.player_color is None
 
     def reset_board_logic_from_db(self):
-        # Save intermediate FENs to check for 3 move repetitions
-        self.FEN_history = defaultdict(int)
+        if self.is_spectator():  # Spectator
+            players = self.game.player_set.all()
+            fences = self.game.fence_set.all()
+            for fence in fences:
+                self.board_logic.place_fence(fence.row, fence.col, fence.fence_type_str, check_winner=False)
 
-        # Instantiate board logic
-        self.board_logic = Board()
-        self.FEN_history[self.board_logic.FEN()] += 1
+            for player in players:
+                self.board_logic._set_pawn_location(player.player_color, target_row=player.row, target_col=player.col)
+        else:
+            # Save intermediate FENs to check for 3 move repetitions
+            self.FEN_history = defaultdict(int)
 
-        for move in self.game.move_set.all().order_by('move_number'):
-            if move.pawn_move is not None:
-                try:
-                    self.board_logic.move_pawn(self.board_logic.current_player(),
-                                            move.pawn_move.row,
-                                            move.pawn_move.col,
-                                            check_player=False,
-                                            check_winner=False)
-                except GameOver as e:
-                    pass
-            else:
-                self.board_logic.place_fence(move.fence.row,
-                                             move.fence.col,
-                                             move.fence.fence_type_str,
-                                             check_winner=False,
-                                             run_BFS=False)
+            # Instantiate board logic
+            self.board_logic = Board()
             self.FEN_history[self.board_logic.FEN()] += 1
 
-        # Load the board state
-        """
-        players = self.game.player_set.all()
-        fences = self.game.fence_set.all()
-        for fence in fences:
-            self.board_logic.place_fence(fence.row, fence.col, fence.fence_type_str, check_winner=False)
+            for move in self.game.move_set.all().order_by('move_number'):
+                if move.pawn_move is not None:
+                    try:
+                        self.board_logic.move_pawn(self.board_logic.current_player(),
+                                                move.pawn_move.row,
+                                                move.pawn_move.col,
+                                                check_player=False,
+                                                check_winner=False)
+                    except GameOver as e:
+                        pass
+                else:
+                    self.board_logic.place_fence(move.fence.row,
+                                                move.fence.col,
+                                                move.fence.fence_type_str,
+                                                check_winner=False,
+                                                run_BFS=False)
+                self.FEN_history[self.board_logic.FEN()] += 1
 
-        for player in players:
-            self.board_logic._set_pawn_location(player.player_color, target_row=player.row, target_col=player.col)
-        """
         
     def disconnect(self, close_code):
         print('Disconnecting from game consumer...', self.player_color)
@@ -176,7 +179,7 @@ class GameConsumer(WebsocketConsumer):
         FEN = self.game.FEN()
 
         # Get player details
-        if self.player_color is None:  # Spectator
+        if self.is_spectator(): # Spectator
             player_username = self.color2username['white']
             opponent_username = self.color2username['black']
         else:
@@ -212,7 +215,7 @@ class GameConsumer(WebsocketConsumer):
         PGN = self.game.PGN()
 
         # Get player details
-        if self.player_color is None:  # Spectator
+        if self.is_spectator(): # Spectator
             player_username = self.color2username['white']
             opponent_username = self.color2username['black']
         else:
@@ -237,6 +240,9 @@ class GameConsumer(WebsocketConsumer):
     """
     Utils
     """
+
+    def is_spectator(self):
+        return self.player_color is None
 
     def next_active_player(self, player_color):
         # TODO: 2+ players
@@ -314,6 +320,8 @@ class GameConsumer(WebsocketConsumer):
                 self.send_pawn_moves(player_color=self.player_color)
 
         except InvalidFence as e:
+            print(e, print_board(self.board_logic))
+        except InvalidPlayer as e:
             print(e, print_board(self.board_logic))
 
     def move_pawn(self, text_data_json, check_active_player, make_updates=True):
@@ -412,6 +420,8 @@ class GameConsumer(WebsocketConsumer):
                 print(e, print_board(self.board_logic))
         except InvalidMove as e:
             print(e, print_board(self.board_logic))
+        except InvalidPlayer as e:
+            print(e, print_board(self.board_logic))
 
     def send_pawn_moves(self, player_color, check_winner=False):
         if self.game.ended():
@@ -498,7 +508,7 @@ class GameConsumer(WebsocketConsumer):
                 text_data[f'{player}_delta_rating'] = int(delta_rating)
 
         # Include player details
-        if self.player_color is None:  # Spectator
+        if self.is_spectator(): # Spectator
             player_username = self.color2username['white']
             opponent_username = self.color2username['black']
         else:
@@ -529,12 +539,24 @@ class GameConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(text_data))
 
     def abort(self, text_data):
+        if self.is_spectator(): # Spectator
+            return
+        
         # TODO: 2+ players
         if not self.game.ended() and self.game.move_count() < 2:
             winner_username = '-'
             self.finish_game(winner_username, abort=True)
+    
+    def abort_game_if_not_started(self):
+        # Automatic abortion of game if not started in 30 seconds
+        abort_game_if_not_started(self.game_id) # .using(run_after=timedelta(seconds=30)).enqueue()
+        self.abort(None)
+
 
     def resign(self, text_data):
+        if self.is_spectator(): # Spectator
+            return
+        
         # TODO: 2+ players
         if not self.game.ended():
             losing_color = text_data['player_color']
@@ -543,7 +565,7 @@ class GameConsumer(WebsocketConsumer):
             self.finish_game(winner_username)
 
     def offer_draw(self, text_data):
-        if self.player_color is None:  # Spectator
+        if self.is_spectator(): # Spectator
             return
 
         if self.player_color == text_data['player_color']:
@@ -560,7 +582,7 @@ class GameConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps(text_data))
 
     def accept_draw(self, text_data):
-        if self.player_color is None:  # Spectator
+        if self.is_spectator():  # Spectator
             return
 
         # User accepting draw offer from other player
@@ -603,7 +625,8 @@ class GameConsumer(WebsocketConsumer):
         # Receive message from websocket
         print('Message received from websocket: ', text_data)
         text_data = json.loads(text_data)
-        self.perform_action(text_data, check_active_player=True, make_updates=True)
+        is_player = not self.is_spectator()
+        self.perform_action(text_data, check_active_player=is_player, make_updates=is_player)
 
     def acknowledge_connection(self, text_data):
         # TODO: 2+ players

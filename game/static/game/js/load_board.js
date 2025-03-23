@@ -865,17 +865,20 @@ function afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gam
         // Hide abort button
         const abort = document.getElementById('abort-button');
         abort.style.display = 'none';
+        
+        if (!isSpectator) {
+            // Show game options box
+            const gameOptions = document.getElementById('game-options-box');
+            gameOptions.style.display = 'inline-block';
 
-        const gameOptions = document.getElementById('game-options-box');
-        gameOptions.style.display = 'inline-block';
+            // Show resign button
+            const resign = document.getElementById('resign-button');
+            resign.style.display = 'inline-block';
 
-        // Show resign button
-        const resign = document.getElementById('resign-button');
-        resign.style.display = 'inline-block';
-
-        // Show draw button
-        const draw = document.getElementById('draw-button');
-        draw.style.display = 'inline-block';
+            // Show draw button
+            const draw = document.getElementById('draw-button');
+            draw.style.display = 'inline-block';
+        }
     }
 }
 
@@ -958,7 +961,7 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 abort.style.display = 'none';
 
                 // Hide draw box
-                const drawOfferBox = document.getElementById('draw-box')
+                const drawOfferBox = document.getElementById('draw-box');
                 if (drawOfferBox !== null)
                     drawOfferBox.style.display = 'none';
 
@@ -966,10 +969,12 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 removeValidPawnMovesEvent(null);
                 break;
             case 'draw_offer':
-                drawOffer(data, gameSocket);
+                if (!isSpectator)
+                    drawOffer(data, gameSocket);
                 break;
             case 'draw_reject':
-                rejectedDraw(data);
+                if (!isSpectator)
+                    rejectedDraw(data);
                 break;
         }
     };
