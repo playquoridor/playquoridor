@@ -39,6 +39,7 @@ parser.add_argument('--server_ip', type=str, default='127.0.0.1')
 parser.add_argument('--protocol', type=str, default='wss')
 parser.add_argument('--max_concurrent_bots', default=16)
 parser.add_argument('--bind_port', type=int, default=9998)
+parser.add_argument('--game_port', type=int, default=8000)
 args = parser.parse_args()
 
 async def closing_send(channel_layer, channel, message):
@@ -60,18 +61,21 @@ def send_match_details(client, game_id):
     channel_layer = get_channel_layer()
     async_to_sync(closing_send)(channel_layer, client['channel_name'], message)  # TODO: Convert to asyncronous???
 
-def handle_match(client, bot_username):
-    game = create_game(client['username'],
-                       bot_username,
-                       player_color='random',
+def handle_match(client, bot_username, bot_color=None):
+    player_color='random'
+    if bot_color is not None:
+        player_color = bot_color
+    game = create_game(bot_username,
+                       client['username'],
+                       player_color=player_color,
                        time=client['time'],
                        increment=client['increment'])
     print('Game created! Id', game.game_id, client['username'], bot_username)
     send_match_details(client, game.game_id)
     return game
 
-def async_play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_color, active_username):
-    asyncio.run(play_game(protocol, server_ip, game_id, bot_username,  bot_token, bot_color, active_username))
+def async_play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_color, active_username, game_port):
+    asyncio.run(play_game(protocol, server_ip, game_id, bot_username,  bot_token, bot_color, active_username, game_port))
 
 def simple_bot_parameters(bot_username):
     parameters = {
@@ -103,12 +107,15 @@ def simple_bot_parameters(bot_username):
     return parameters
 
 
-async def play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_color, active_username):
+async def play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_color, active_username, game_port=None):
     parameters = simple_bot_parameters(bot_username)
     print(f'Bot ({bot_username}) parameters:', parameters)
 
     # Select from available bots
-    uri = f'{protocol}://{server_ip}/ws/game/{game_id}/?token={bot_token}'
+    port_str = ''
+    if game_port is not None:
+        port_str = f':{game_port}'
+    uri = f'{protocol}://{server_ip}{port_str}/ws/game/{game_id}/?token={bot_token}'
     origin='https://playquoridor.online'  # Without origin, when using HTTPS, the connection is refused (CRSF_TRUSTED_ORIGINS: https://docs.djangoproject.com/en/5.1/ref/settings/#csrf-trusted-origins)
     print(f"Connecting to {uri} ...")
     async with websockets.connect(uri, origin=origin) as websocket:
@@ -162,6 +169,7 @@ async def play_game(protocol, server_ip, game_id, bot_username, bot_token, bot_c
                     await websocket.send(json.dumps(message))
         except GameOver as e:
             print(f"Game over: {e}")
+        print('Game finished!')
 
 if __name__ == '__main__':
     bot_usernames = []
@@ -182,6 +190,8 @@ if __name__ == '__main__':
         elo = float(config_split[2])  # Potentially other details...
         elo_threshold = float(config_split[3])  # Unused
         channel_name = config_split[4]
+        bot_username = config_split[7] if len(config_split) > 7 else None
+        bot_color = config_split[8] if len(config_split) > 8 else None
         client = {
             'username': username,
             'elo': elo,
@@ -189,7 +199,9 @@ if __name__ == '__main__':
             'client': client,
             'channel_name': channel_name,
             'time': int(config_split[5]),  # Time in minutes
-            'increment': int(config_split[6])  # Increment in seconds
+            'increment': int(config_split[6]),  # Increment in seconds
+            'bot_username': bot_username,
+            'bot_color': bot_color
         }
 
         if has_active_game(username):
@@ -197,15 +209,24 @@ if __name__ == '__main__':
             continue
 
         # Retrieve users from database corresponding to bot username set
-        bot_uds = UserDetails.objects.filter(bot=True)
-
         available_bot_uds = []
-        busy_bot_count = 0
-        for bot_ud in bot_uds:
-            if not has_active_game(bot_ud.user.username):
-                available_bot_uds.append(bot_ud)
-            else:
-                busy_bot_count += 1
+        if bot_username is not None:
+            print('REQUESTED SPECIFIC bot username:', bot_username)
+            if not has_active_game(bot_username):
+                bot_uds = UserDetails.objects.filter(user__username=bot_username, bot=True)
+                if len(bot_uds) == 0:
+                    print(f"ERROR: Bot {bot_username} not found in database")
+                    continue
+                available_bot_uds.append(bot_uds[0])
+                busy_bot_count = 0
+        else:
+            bot_uds = UserDetails.objects.filter(bot=True)
+            busy_bot_count = 0
+            for bot_ud in bot_uds:
+                if not has_active_game(bot_ud.user.username):
+                    available_bot_uds.append(bot_ud)
+                else:
+                    busy_bot_count += 1
         print('Available bots:', available_bot_uds, 'Busy bots:', busy_bot_count)
 
         if len(available_bot_uds) > 0 and busy_bot_count < args.max_concurrent_bots:
@@ -222,10 +243,10 @@ if __name__ == '__main__':
             bot_user = available_bot_uds[bot_idx].user
             bot_username = bot_user.username
             bot_token = Token.objects.get(user=bot_user)
-            game = handle_match(client, bot_username)
+            game = handle_match(client, bot_username, bot_color)
             bot_color = game.player_set.get(user__username=bot_username).player_color
             active_username = bot_username if bot_color == 'white' else client['username']
 
             # async_play_game(args.protocol, args.server_ip, game.game_id, bot_username, bot_token, bot_color, active_username)
-            threading.Thread(target=async_play_game, args=(args.protocol, args.server_ip, game.game_id, bot_username, bot_token, bot_color, active_username)).start()
+            threading.Thread(target=async_play_game, args=(args.protocol, args.server_ip, game.game_id, bot_username, bot_token, bot_color, active_username, args.game_port)).start()
             # threading.Thread(target=handle_client, args=(client,)).start()
