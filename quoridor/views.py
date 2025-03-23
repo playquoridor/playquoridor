@@ -89,7 +89,7 @@ def top_game_context(request, active_game_id=None):
     return context
 
 
-def leaderboard_context(request, k=9):
+def leaderboard_context(request, k=50):
     # top_rated_user_details = UserDetails.objects.filter(user__is_active=True).order_by('standard_rating')[::-1][:k]
     if len(Rating.objects.all()) == 0:
         top_ratings_bullet = []
@@ -116,7 +116,7 @@ def leaderboard_context(request, k=9):
     return context
 
 
-def online_users_context(request, k=8):
+def online_users_context(request, k=50):
     ud = UserDetails.objects.filter(online__gt=0).exclude(user__username=request.user.username)
     # online_ratings = Rating.objects.filter(user_details__online__gt=0)
     # print('Online ratings', online_ratings)
