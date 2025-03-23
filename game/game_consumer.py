@@ -121,6 +121,7 @@ class GameConsumer(WebsocketConsumer):
 
     def reset_board_logic_from_db(self):
         if self.is_spectator():  # Spectator
+            self.board_logic = Board()
             players = self.game.player_set.all()
             fences = self.game.fence_set.all()
             for fence in fences:
