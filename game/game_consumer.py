@@ -282,7 +282,8 @@ class GameConsumer(WebsocketConsumer):
 
             # Place fence. This function raises an error if fence is invalid
             self.board_logic.place_fence(row, col, wall_type, run_BFS=updates_game_state)
-            self.FEN_history[self.board_logic.FEN()] += 1
+            if not self.is_spectator():
+                self.FEN_history[self.board_logic.FEN()] += 1
 
             # If consumer's associated player is placing the fence, update database and communicate with other player
             # if self.player_color == player == self.active_player:  # self.game.get_active_player():
@@ -343,9 +344,10 @@ class GameConsumer(WebsocketConsumer):
             self.board_logic.move_pawn(player=player,
                                        target_row=row,
                                        target_col=col)
-            self.FEN_history[self.board_logic.FEN()] += 1
-            if self.FEN_history[self.board_logic.FEN()] >= 3:
-                raise GameOver('-', True, 'Three move repetition')
+            if not self.is_spectator():
+                self.FEN_history[self.board_logic.FEN()] += 1
+                if self.FEN_history[self.board_logic.FEN()] >= 3:
+                    raise GameOver('-', True, 'Three move repetition')
 
             # If consumer's associated player is moving the pawn, update database and communicate with other player
             updates_game_state = make_updates and self.player_color == player
