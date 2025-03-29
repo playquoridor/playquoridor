@@ -28,6 +28,7 @@ pip install channels-redis
 pip install psycopg2-binary
 pip install websockets
 pip install djangorestframework djangorestframework-simplejwt
+pip install google-api-python-client
 ```
 
 Install redis-server
