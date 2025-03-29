@@ -1,13 +1,16 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %} <!-- pip install django-crispy-forms, crispy-bootstrap4-->
+{% load socialaccount %}
 
 {% block title %}
   <title>Login</title>
 {% endblock %}
 
 {% block content %}
+<script src="https://accounts.google.com/gsi/client" async></script>
+
 <div class="login-container">
-    <form method="post" action="{% url 'login' %}">
+    <form method="post" action="{% url 'account_login' %}">
     {% csrf_token %}
 
       {{ form | crispy }}  <!-- | crispy -->
@@ -21,9 +24,30 @@
     <button class="btn btn-primary" type="submit">Log in</button>
 
     {# Assumes you setup the password_reset view in your URLconf #}
-    <a href="{% url 'password_reset' %}">Lost password?</a>
+    <a href="{% url 'account_set_password' %}">Lost password?</a>
   </form>
-
 </div>
+
+<br>
+<div id="g_id_onload"
+    data-client_id="47817519507-pl0tgbv1re0trg5855s2o6nva6fqef16.apps.googleusercontent.com"
+    data-context="signin"
+    data-ux_mode="popup"
+    data-login_uri="{% url 'register:auth-receiver' %}"
+    data-auto_prompt="false">
+  </div>
+
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <div class="g_id_signin"
+        data-type="standard"
+        data-shape="rectangular"
+        data-theme="outline"
+        data-text="signin"
+        data-size="large"
+        data-logo_alignment="left">
+    </div>
+  </div>
+<br>
+
 
 {% endblock %}

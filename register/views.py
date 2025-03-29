@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
-from .forms import NewUserForm
+from .forms import NewUserForm, AuthNewUserForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -10,8 +11,13 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 # from django.contrib.sites.models import Site
-
 from .tokens import account_activation_token
+
+# Google authentication
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import os
 
 # Ref: https://ordinarycoders.com/blog/article/django-user-register-login-logout
 # Ref: https://pylessons.com/django-email-confirm
@@ -90,3 +96,113 @@ def activate(request, uidb64, token):
     else:
         return render(request, 'activation_failed.html')
 """
+
+def set_username_request(request):
+    user_data = request.session.get('user_data')
+    if not user_data:
+        messages.error(request, "Session expired or invalid request.")
+        return redirect('index')
+
+    email = user_data['email']
+    if not email:
+        messages.error(request, "Session expired or invalid request.")
+        return redirect('index')
+    
+    token = request.session.get('google_credential')
+    try:
+        user_data = id_token.verify_oauth2_token(
+            token, requests.Request(), os.environ['GOOGLE_OAUTH_CLIENT_ID']
+        )
+
+        # Verify Google as the issuer
+        if user_data['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            messages.error(request, 'Invalid token issuer.')
+            return redirect('index')
+
+        # Validate that Google issued this token for your app
+        if user_data['aud'] != os.environ['GOOGLE_OAUTH_CLIENT_ID']:
+            messages.error(request, 'Invalid authentication attempt.')
+            return redirect('index')
+        
+    except ValueError:
+        messages.error(request, 'Google authentication failed.')
+        return redirect('index')
+
+    if request.method == 'POST':
+        # Check if user exists
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            login(request, existing_user)
+            messages.success(request, 'Successfully logged in.')
+            return redirect('index')
+
+        form = AuthNewUserForm(request.POST, initial={'email': email})
+        form.email = email
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Registration successful')
+            return redirect('index')
+        else:
+            errors = form.errors  # .replace('password2', 'password')
+            messages.error(request, errors)  # 'Unsuccessful registration. Invalid information.'
+    form = AuthNewUserForm(initial={'email': email})
+    return render(request=request, template_name='register/register.html', context={'register_form': form})
+
+
+# @csrf_protect
+@csrf_exempt
+def auth_receiver(request):
+    """
+    Google calls this URL after the user has signed in with their Google account.
+    """
+    # Ref google token: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token?hl=es-419
+    csrf_token_cookie = request.COOKIES.get('g_csrf_token')
+    if not csrf_token_cookie:
+        messages.error(request, 'No CSRF token in cookies.')
+        return redirect('index')
+    csrf_token_body = request.POST['g_csrf_token']
+    if not csrf_token_body:
+        messages.error(request, 'No CSRF token in post body.')
+        return redirect('index')
+    if csrf_token_cookie != csrf_token_body:
+        messages.error(request, 'Failed to verify double submit cookie.')
+        return redirect('index')
+
+    token = request.POST['credential']
+
+    try:
+        user_data = id_token.verify_oauth2_token(
+            token, requests.Request(), os.environ['GOOGLE_OAUTH_CLIENT_ID']
+        )
+
+        # Verify Google as the issuer
+        if user_data['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            messages.error(request, 'Invalid token issuer.')
+            return redirect('index')
+
+        # Validate that Google issued this token for your app
+        if user_data['aud'] != os.environ['GOOGLE_OAUTH_CLIENT_ID']:
+            messages.error(request, 'Invalid authentication attempt.')
+            return redirect('index')
+        
+    except ValueError:
+        messages.error(request, 'Google authentication failed.')
+        return redirect('index')
+
+    email = user_data.get('email')
+    if not email:
+        messages.error(request, 'Google did not provide an email.')
+        return redirect('index')
+    
+    # Check if user already exists
+    user = User.objects.filter(email=email).first()
+    if user:
+        login(request, user)
+        messages.success(request, 'Successfully logged in.')
+        return redirect('index')
+
+    request.session['user_data'] = user_data
+    request.session['google_credential'] = token
+    # return set_username_request(request, email=user_data['email'])
+    return redirect('register:set-username-request')  # Use URL name

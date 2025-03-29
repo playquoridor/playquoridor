@@ -89,14 +89,14 @@
                              </a>
                          </li>
                         <li class="nav-item px-4">
-                            <form method="post" action="{% url 'logout' %}?next={{ request.path }}">
+                            <form method="post" action="{% url 'account_logout' %}?next={{ request.path }}">
                                 {% csrf_token %}
                                 <button class="nav-link"> Logout </button>
                             </form>
                         </li>
                         {% else %}
                          <li class="nav-item">
-                             <a class="nav-link" href="{% url 'login' %}?next={{ request.path }}">
+                             <a class="nav-link" href="{% url 'account_login' %}?next={{ request.path }}">
                                  <span class="glyphicon glyphicon-user"></span>Login
                              </a>
                          </li>

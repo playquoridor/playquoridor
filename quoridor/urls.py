@@ -29,7 +29,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view()),
     path('accounts/logout/', auth_views.LogoutView.as_view()),
-    path('accounts/', include('django.contrib.auth.urls')),
+    # path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('allauth.urls')),  # Include allauth URLs
+    path('accounts/', include('allauth.socialaccount.urls')),
 ]
 
 handler404 = 'quoridor.views.handler404'

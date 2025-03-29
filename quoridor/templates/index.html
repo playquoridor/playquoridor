@@ -11,6 +11,7 @@
             window.history.replaceState( null, null, window.location.href );
         }
     </script>
+    <script src="https://accounts.google.com/gsi/client" async></script>
 
     <div class="hidden pointer" id="join-active-game">
         <!-- <button id="join-active-game"></button> -->
@@ -34,9 +35,27 @@
                     <div class="small-padding">
                         <p> Welcome! PlayQuoridor is a free/libre, no-ads, open source Quoridor server powered by volunteers and donations. </p>
 
-                        <p> To get started, <a href="{% url 'register:register' %}?next={{ request.path }}">sign up</a> or <a href="{% url 'login' %}?next={{ request.path }}">log in</a> if you already have an account. </p>
+                        <p> To get started, <a href="{% url 'register:register' %}?next={{ request.path }}">sign up</a> or <a href="{% url 'account_login' %}?next={{ request.path }}">log in</a> if you already have an account. </p>
+                        
+                        <div id="g_id_onload"
+                            data-client_id="47817519507-pl0tgbv1re0trg5855s2o6nva6fqef16.apps.googleusercontent.com"
+                            data-context="signin"
+                            data-ux_mode="popup"
+                            data-login_uri="{% url 'register:auth-receiver' %}"
+                            data-auto_prompt="false">
+                        </div>
+                        
+                        <div style="display: flex; justify-content: center; align-items: center;">
+                            <div class="g_id_signin"
+                                data-type="standard"
+                                data-shape="rectangular"
+                                data-theme="outline"
+                                data-text="signin"
+                                data-size="large"
+                                data-logo_alignment="left">
+                            </div>
+                        </div>
 
-                        <p> This is a beta version. Users may be affected by disruptions. Please <a href="mailto:playquoridor@gmail.com">contact us</a> to report any bugs, propose new features, or if you want to contribute to PlayQuoridor's development.</p>
                     </div>
                 </div>
             {% endif %}
@@ -58,7 +77,7 @@
         </div>
 
         <div class="justify small-font gray-text"> <!-- small-padding -->
-            <p> <b> Terms of Service.</b> <i> PlayQuoridor </i> is under continuous development. In this beta version, users may be affected by maintenance and technological disruptions (including glitches and data loss). If you do not agree, do not use our website or services. We are not liable for any losses or harm to you. By using our platform, you accept these conditions. </p>
+            <p> <b> Terms of Service.</b> <i> PlayQuoridor </i> is under continuous development. In this beta version, users may be affected by maintenance and technological disruptions (including glitches and data loss). If you do not agree, do not use our website or services. We are not liable for any losses or harm to you. By using our platform, you accept these conditions. Please <a href="mailto:playquoridor@gmail.com">contact us</a> to report any bugs, propose new features, or if you want to contribute to PlayQuoridor's development.</p>
         
             <div class="center">
                 <div class="social-icons">
