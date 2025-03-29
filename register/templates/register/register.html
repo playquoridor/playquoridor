@@ -21,26 +21,27 @@
 	<!-- <p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p> -->
 </div>
 
-<br>
-<div id="g_id_onload"
-    data-client_id="47817519507-pl0tgbv1re0trg5855s2o6nva6fqef16.apps.googleusercontent.com"
-    data-context="signin"
-    data-ux_mode="popup"
-    data-login_uri="{% url 'register:auth-receiver' %}"
-    data-auto_prompt="false">
-  </div>
+{% if show_auth %}
+	<br>
+	<div id="g_id_onload"
+		data-client_id="47817519507-pl0tgbv1re0trg5855s2o6nva6fqef16.apps.googleusercontent.com"
+		data-context="signin"
+		data-ux_mode="popup"
+		data-login_uri="{% url 'register:auth-receiver' %}"
+		data-auto_prompt="false">
+	</div>
 
-  <div style="display: flex; justify-content: center; align-items: center;">
-    <div class="g_id_signin"
-        data-type="standard"
-        data-shape="rectangular"
-        data-theme="outline"
-        data-text="signin"
-        data-size="large"
-        data-logo_alignment="left">
-    </div>
-  </div>
-<br>
-
+	<div style="display: flex; justify-content: center; align-items: center;">
+		<div class="g_id_signin"
+			data-type="standard"
+			data-shape="rectangular"
+			data-theme="outline"
+			data-text="signin"
+			data-size="large"
+			data-logo_alignment="left">
+		</div>
+	</div>
+	<br>
+{% endif %}
 
 {% endblock %}

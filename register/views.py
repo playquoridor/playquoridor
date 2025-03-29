@@ -42,7 +42,7 @@ def register_request(request):
             # errors['title'] = 'Errors:'
             messages.error(request, errors)  # 'Unsuccessful registration. Invalid information.'
     form = NewUserForm()
-    return render(request=request, template_name='register/register.html', context={'register_form': form})
+    return render(request=request, template_name='register/register.html', context={'register_form': form, 'show_auth': True})
 
 
 def activate_email(request, user, to_email):
@@ -150,7 +150,7 @@ def set_username_request(request):
             errors = form.errors  # .replace('password2', 'password')
             messages.error(request, errors)  # 'Unsuccessful registration. Invalid information.'
     form = AuthNewUserForm(initial={'email': email})
-    return render(request=request, template_name='register/register.html', context={'register_form': form})
+    return render(request=request, template_name='register/register.html', context={'register_form': form, 'show_auth': False})
 
 
 # @csrf_protect
