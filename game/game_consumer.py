@@ -125,16 +125,17 @@ class GameConsumer(WebsocketConsumer):
             players = self.game.player_set.all()
             fences = self.game.fence_set.all()
             for fence in fences:
-                self.board_logic.place_fence(fence.row, fence.col, fence.fence_type_str, check_winner=False)
+                self.board_logic.place_fence(fence.row, fence.col, fence.fence_type_str, check_winner=False, check_update_fences=False, run_BFS=False)
 
             for player in players:
                 self.board_logic._set_pawn_location(player.player_color, target_row=player.row, target_col=player.col)
         else:
+             # Instantiate board logic
+            self.board_logic = Board()
+
+            # if not self.is_spectator():
             # Save intermediate FENs to check for 3 move repetitions
             self.FEN_history = defaultdict(int)
-
-            # Instantiate board logic
-            self.board_logic = Board()
             self.FEN_history[self.board_logic.FEN()] += 1
 
             for move in self.game.move_set.all().order_by('move_number'):
@@ -281,12 +282,11 @@ class GameConsumer(WebsocketConsumer):
                 raise InvalidFence(f'Player {player} ran out of walls')
 
             # Place fence. This function raises an error if fence is invalid
-            self.board_logic.place_fence(row, col, wall_type, run_BFS=updates_game_state)
+            self.board_logic.place_fence(row, col, wall_type, run_BFS=updates_game_state, check_update_fences=updates_game_state)
             if not self.is_spectator():
                 self.FEN_history[self.board_logic.FEN()] += 1
 
             # If consumer's associated player is placing the fence, update database and communicate with other player
-            # if self.player_color == player == self.active_player:  # self.game.get_active_player():
             if updates_game_state:
                 # Place fence and decrease number of walls
                 # (changes active player in the same transaction)
