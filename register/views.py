@@ -18,6 +18,9 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
+from django.conf import settings
+
+
 
 # Ref: https://ordinarycoders.com/blog/article/django-user-register-login-logout
 # Ref: https://pylessons.com/django-email-confirm
@@ -111,7 +114,7 @@ def set_username_request(request):
     token = request.session.get('google_credential')
     try:
         user_data = id_token.verify_oauth2_token(
-            token, requests.Request(), os.environ['GOOGLE_OAUTH_CLIENT_ID']
+            token, requests.Request(), settings.GOOGLE_OAUTH_CLIENT_ID
         )
 
         # Verify Google as the issuer
@@ -120,7 +123,7 @@ def set_username_request(request):
             return redirect('index')
 
         # Validate that Google issued this token for your app
-        if user_data['aud'] != os.environ['GOOGLE_OAUTH_CLIENT_ID']:
+        if user_data['aud'] != settings.GOOGLE_OAUTH_CLIENT_ID:
             messages.error(request, 'Invalid authentication attempt.')
             return redirect('index')
         
@@ -173,7 +176,7 @@ def auth_receiver(request):
 
     try:
         user_data = id_token.verify_oauth2_token(
-            token, requests.Request(), os.environ['GOOGLE_OAUTH_CLIENT_ID']
+            token, requests.Request(), settings.GOOGLE_OAUTH_CLIENT_ID
         )
 
         # Verify Google as the issuer
@@ -182,7 +185,7 @@ def auth_receiver(request):
             return redirect('index')
 
         # Validate that Google issued this token for your app
-        if user_data['aud'] != os.environ['GOOGLE_OAUTH_CLIENT_ID']:
+        if user_data['aud'] != settings.GOOGLE_OAUTH_CLIENT_ID:
             messages.error(request, 'Invalid authentication attempt.')
             return redirect('index')
         
