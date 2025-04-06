@@ -69,11 +69,11 @@ function requestTimeCheck(socket, playerColor){
 Sets
  */
 function setWallNumber(data){
-    const wallNumber = document.getElementById('walls_' + data['player']);
+    const wallNumber = document.getElementById('walls_' + data['player_color']);
     wallNumber.textContent = data['remaining_fences'] + ' walls';
 }
 
-function setWinner(data, playerUsername, isSpectator, opponentUsername){
+function setWinner(data, pColor, isSpectator, oColor, gameSocket){
     const gameMessage = document.getElementById('game-message');
 
     // Assumes game has ended
@@ -89,13 +89,14 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
         if ('just_finished' in data)
             playGameDrawSound();
     }else{
+        const winnerColor = data['winner_color'];
         const winnerUsername = data['winner_username'];
-        const turn = document.getElementById('turn_' + winnerUsername);
+        const turn = document.getElementById('turn_' + winnerColor);
         turn.textContent = '🏆';
 
-        gameMessage.innerText = winnerUsername + ' wins';
+        gameMessage.innerText = 'Player ' + winnerColor + ' wins';
         if ('just_finished' in data){
-            if (playerUsername == winnerUsername)
+            if (pColor == winnerColor)
                 playGameWinSound();
             else
                 playGameLossSound();
@@ -111,6 +112,11 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
             const rematch = document.getElementById('rematch-box');
             rematch.style.display = 'inline-block';
             // TODO: Only show if this in my last game
+            
+            const rematchButton = document.getElementById('rematch-button');
+            rematchButton.onclick = function (event) {
+                sendRematchChallenge(gameSocket);
+            };
         }
     }
 
@@ -125,9 +131,9 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
     optionsBox.style.display = 'none'
 
     // Show rating diffs
-    if (playerUsername+'_delta_rating' in data) {
-        const playerRatingDiff = document.getElementById(playerUsername + '_delta_rating');
-        let delta = data[playerUsername + '_delta_rating'];
+    if (pColor+'_delta_rating' in data) {
+        const playerRatingDiff = document.getElementById(pColor + '_delta_rating');
+        let delta = data[pColor + '_delta_rating'];
         if (parseInt(delta) >= 0){
             delta = '+' + delta;
             playerRatingDiff.classList.add('positive-delta');
@@ -136,9 +142,9 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
         }
         playerRatingDiff.innerText = delta;
     }
-    if(opponentUsername+'_delta_rating' in data) {
-        const opponentRatingDiff = document.getElementById(opponentUsername + '_delta_rating');
-        let delta = data[opponentUsername + '_delta_rating'];
+    if(oColor+'_delta_rating' in data) {
+        const opponentRatingDiff = document.getElementById(oColor + '_delta_rating');
+        let delta = data[oColor + '_delta_rating'];
         if (parseInt(delta) >= 0){
             delta = '+' + delta;
             opponentRatingDiff.classList.add('positive-delta');
@@ -149,26 +155,26 @@ function setWinner(data, playerUsername, isSpectator, opponentUsername){
     }
 }
 
-function setActivePlayer(data, playerUsername, isSpectator, opponentUsername){
+function setActivePlayer(data, pColor, isSpectator, oColor, gameSocket){
     const playerBoxes = document.querySelectorAll('[id^="bar"]');  // id^=gameId
     for (const box of playerBoxes){
         box.classList.remove('active-bar');
     }
-    const gameEnded = (data['winner_username'] !== undefined && data['winner_username'] !== '') || (data['draw'] !== undefined && data['draw'])
+    const gameEnded = (data['winner_color'] !== undefined && data['winner_color'] !== '') || (data['draw'] !== undefined && data['draw'])
     if (gameEnded) {
-        setWinner(data, playerUsername, isSpectator, opponentUsername);
+        setWinner(data, pColor, isSpectator, oColor, gameSocket);
         return null;
     }
     else{
-        const playerBar = document.getElementById('bar-' + data['active_username']);
+        const playerBar = document.getElementById('bar-' + data['active_color']);
         playerBar.classList.add('active-bar');
 
-        return data['active_username'];
+        return data['active_color'];
     }
 }
 
-function setTime(username, remainingSeconds) {
-    const playerTimeBox = document.getElementById('timer-' + username);
+function setTime(color, remainingSeconds) {
+    const playerTimeBox = document.getElementById('timer-' + color);
     const remainingTime = new Date(remainingSeconds * 1000).toISOString().slice(14, 19);
     playerTimeBox.innerText = remainingTime;
 }
@@ -177,11 +183,11 @@ function setTime(username, remainingSeconds) {
 Time
  */
 let activeInterval;
-function startTimer(activePlayer, gameSocket) {
+function startTimer(activeColor, gameSocket) {
     if (activeInterval)
         clearInterval(activeInterval);
 
-    const playerTimeBox = document.getElementById('timer-' + activePlayer);
+    const playerTimeBox = document.getElementById('timer-' + activeColor);
     const splitTime = playerTimeBox.innerText.split(':');
     const minutes = parseInt(splitTime[0]);
     const seconds = parseInt(splitTime[1]);
@@ -193,7 +199,7 @@ function startTimer(activePlayer, gameSocket) {
             clearInterval(activeInterval);
 
             // Request time check
-            requestTimeCheck(gameSocket, activePlayer);
+            requestTimeCheck(gameSocket, activeColor);
         }
         playerTimeBox.textContent = new Date(timer * 1000).toISOString().slice(14, 19);
     }, 1000);
@@ -414,7 +420,7 @@ function createBoard(gameId, playerColor, isSpectator, gameSocket){
     }
 }
 
-function setupBoardFromFEN(FEN, gameId, playerColor, playerUsername, isSpectator, opponentUsername, gameSocket){
+function setupBoardFromFEN(FEN, gameId, playerColor, pColor, isSpectator, oColor, gameSocket){
     const FEN_split = FEN.split('/');
 
     // Horizontal fences
@@ -429,44 +435,42 @@ function setupBoardFromFEN(FEN, gameId, playerColor, playerUsername, isSpectator
     placePawnsByStr(FEN_split[2], gameId);
 
     // Number of walls available
-    // In case of spectator, playerUsername is white and opponentUsername is black
     const wallNumbers = FEN_split[3].trim().split(' ');
-    const whitePlayer = (playerColor === 'white' || isSpectator)? playerUsername : opponentUsername;
-    const blackPlayer = playerColor === 'black' ? playerUsername : opponentUsername;
-    setWallNumber({'player': whitePlayer, 'remaining_fences': wallNumbers[0]});
-    setWallNumber({'player': blackPlayer, 'remaining_fences': wallNumbers[1]});
+    setWallNumber({'player_color': 'white', 'remaining_fences': wallNumbers[0]});
+    setWallNumber({'player_color': 'black', 'remaining_fences': wallNumbers[1]});
 
     // Set active player and set winner if provided
-    let winnerUsername = '';
+    // let winnerUsername = '';
+    let wcolor = ''
     let draw = false;
     let abort = false;
-    const activePlayer = FEN_split[4].trim() === '1' ? whitePlayer : blackPlayer;
+    const activeColor = FEN_split[4].trim() === '1' ? 'white' : 'black';
     if (FEN_split.length > 6) {
         let winnerColor = FEN_split[6].trim().length > 0 ? parseInt(FEN_split[6]) : null;
         if (winnerColor === 0)
-            winnerUsername = whitePlayer;
+            wcolor = 'white';
         else if (winnerColor === 1)
-            winnerUsername = blackPlayer;
+            wcolor = 'black';
         else if (winnerColor === -1)
             draw = true;
         else if (winnerColor === -2)
             abort = true;
     }
-    activeUsername = setActivePlayer({'active_username': activePlayer, 'winner_username': winnerUsername, 'draw': draw},
-        playerUsername, isSpectator, opponentUsername);
-    window.myTurn = (activeUsername === playerUsername);
+    setActivePlayer({'active_color': activeColor, 'winner_color': wcolor, 'draw': draw},
+        pColor, isSpectator, oColor, gameSocket);
+    window.myTurn = (activeColor === pColor);
 
     // Set remaining time (requires remaining times)
     if (FEN_split.length > 7) {
         const remainingTimes = FEN_split[7].trim().split(' ');
-        setTime(whitePlayer, parseFloat(remainingTimes[0]));
-        setTime(blackPlayer, parseFloat(remainingTimes[1]));
+        setTime('white', parseFloat(remainingTimes[0]));
+        setTime('black', parseFloat(remainingTimes[1]));
     }
 
     // Setup buttons and start timer (requires move count)
     if (FEN_split.length > 5) {
         const moveCount = parseInt(FEN_split[5]);
-        if (winnerUsername === '' && !draw && !abort){
+        if (wcolor === '' && !draw && !abort){
             if (moveCount <= 1) {
                 if (moveCount === 0)
                     playStartGameSound();
@@ -482,7 +486,7 @@ function setupBoardFromFEN(FEN, gameId, playerColor, playerUsername, isSpectator
                 gameOptions.style.display = 'none';
             }
             else if(moveCount > 1){
-                startTimer(activePlayer, gameSocket);
+                startTimer(activeColor, gameSocket);
 
                 // Hide abort button
                 const abort = document.getElementById('abort-button');
@@ -610,7 +614,7 @@ function swapSelectedMoveDiv(prevAnalysisMoveNumber, currAnalysisMoveNumber){
     }
 }
 
-function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs) {
+function createAnalysisPanel(PGN, gameId, playerColor, pColor, isSpectator, oColor, analysisFENs) {
     const moveList = PGN.split(/\d+\.\s/).filter(move => move.trim());
     const gameAnalysisContainer = document.getElementById('game-analysis-container');
     gameAnalysisContainer.classList.remove('hidden');
@@ -629,7 +633,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
             const newAnalysisMoveNumber = parseInt(event.target.id.split('-')[1])*2 + 1;
             swapSelectedMoveDiv(analysisMoveNumber, newAnalysisMoveNumber);
             analysisMoveNumber = newAnalysisMoveNumber;
-            setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+            setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, pColor, isSpectator, oColor, null);
         }
         moveListBox.appendChild(moveNumberDiv);
         for (const m of moveSplit){
@@ -642,7 +646,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
                 const newAnalysisMoveNumber = parseInt(event.target.id.split('-')[1]) + 1;
                 swapSelectedMoveDiv(analysisMoveNumber, newAnalysisMoveNumber);
                 analysisMoveNumber = newAnalysisMoveNumber;
-                setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+                setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, pColor, isSpectator, oColor, null);
             }
             moveListBox.appendChild(moveDiv);
             totalMoves += 1;
@@ -662,7 +666,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
             prevMovDiv.classList.remove('selected');
         }
         analysisMoveNumber = 0;
-        setupBoardFromFEN(analysisFENs[0], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+        setupBoardFromFEN(analysisFENs[0], gameId, playerColor, pColor, isSpectator, oColor, null);
     });
 
     const analysisForward = document.getElementById('analysis-forward');
@@ -670,7 +674,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
         if (analysisMoveNumber < totalMoves) {
             swapSelectedMoveDiv(analysisMoveNumber, analysisMoveNumber + 1);
             analysisMoveNumber += 1;
-            setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+            setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, pColor, isSpectator, oColor, null);
         }
     });
 
@@ -680,7 +684,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
             if (analysisMoveNumber > 0) {
                 resetFences();
                 analysisMoveNumber -= 1;
-                setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+                setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, pColor, isSpectator, oColor, null);
             }
     });
 
@@ -688,7 +692,7 @@ function createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectat
     analysisEnd.addEventListener('click',  function (event){
         swapSelectedMoveDiv(analysisMoveNumber, analysisFENs.length - 1);
         analysisMoveNumber = analysisFENs.length - 1;
-        setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, playerUsername, isSpectator, opponentUsername, null);
+        setupBoardFromFEN(analysisFENs[analysisMoveNumber], gameId, playerColor, pColor, isSpectator, oColor, null);
     });
 
     document.addEventListener('keydown',  function (e){
@@ -845,11 +849,11 @@ function drawOffer(data, gameSocket) {
     }
 }
 
-function afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gameSocket, updateTurn=true) {
+function afterMoveLogic(data, pColor, isSpectator, oColor, gameSocket, updateTurn=true) {
     // Set turn
     if (updateTurn) {
-        activeUsername = setActivePlayer(data, playerUsername, isSpectator, opponentUsername);
-        window.myTurn = (activeUsername === playerUsername);
+        let activeColor = setActivePlayer(data, pColor, isSpectator, oColor, gameSocket);
+        window.myTurn = (activeColor === pColor);
     }
 
     // Hide draw offer box
@@ -857,10 +861,10 @@ function afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gam
     drawBox.style.display = 'none';
 
     // Set time
-    setTime(data['last_username'], data['remaining_time']);
+    setTime(data['last_color'], data['remaining_time']);
     const moveCount = parseInt(data['move_count']);
     if ((moveCount > 1) && activeUsername !== null) {
-        startTimer(activeUsername, gameSocket);
+        startTimer(data['active_color'], gameSocket);
 
         // Hide abort button
         const abort = document.getElementById('abort-button');
@@ -883,9 +887,204 @@ function afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gam
 }
 
 /*
+Rematch
+*/
+
+function sendRematchChallenge(gameSocket) {
+    const challengedUsername = JSON.parse(document.getElementById('opponent').textContent);
+    const opponentIsBot = JSON.parse(document.getElementById('opponent-bot').textContent);
+    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+
+    if (opponentIsBot){
+        const matchmakingSocket = new WebSocket(
+            ws_scheme
+            +'://'
+            + window.location.host
+            + '/ws/matchmaking/'
+            + '0/null/'
+        );
+
+        matchmakingSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            switch (data['action']) {
+                case 'match_details':
+                    matchmakingSocket.close();
+                    window.location.replace(window.location.protocol + "//" + window.location.host + "/game/" + data['game_id']);
+                    break;
+                case 'matchmaking_failed':
+                    switch (data['reason']){
+                        case 'Game already in progress':
+                            matchmakingSocket.close();
+                            const joinActiveGameButton = document.getElementById("join-active-game");
+                            joinActiveGameButton.innerText = data['reason'] + ': ' +
+                                data['white_player_username'] + ' (' + data['white_player_rating'] + ') vs ' +
+                                data['black_player_username'] + ' (' + data['black_player_rating'] + ')';
+                            joinActiveGameButton.classList.remove('hidden');
+                            joinActiveGameButton.classList.add('alert');
+                            joinActiveGameButton.classList.add('alert-danger');
+                            joinActiveGameButton.onclick = function (){
+                                window.location.replace(window.location.protocol + "//" + window.location.host + "/game/" + data['game_id']);
+                            }
+                            break;
+                    }
+                    break;
+            }
+        };
+    
+        matchmakingSocket.onopen = function (e) {
+            // TODO: Might need to wait for connection
+            const requestMatch = JSON.stringify({
+                'action': 'request_bot_match',
+                'time': JSON.parse(document.getElementById('total-time-per-player').textContent) / 60,
+                'increment': JSON.parse(document.getElementById('increment').textContent),
+                'bot_pool': true,
+                'bot_username': challengedUsername,
+                'bot_color': JSON.parse(document.getElementById('player-color').textContent),
+            });
+            matchmakingSocket.send(requestMatch);
+        };
+    
+        matchmakingSocket.onclose = function (e) {
+            const waitingAnimationContainer = document.getElementById('waitingAnimationContainer');
+            if (waitingAnimationContainer)
+                waitingAnimationContainer.remove();
+        };
+    }else{
+        const challengeProposal = JSON.stringify({
+            'action': 'challenge_rematch',
+            'challenger': JSON.parse(document.getElementById('player').textContent),
+            'challenged': JSON.parse(document.getElementById('opponent').textContent),
+            'game_id': JSON.parse(document.getElementById('game-id').textContent),
+            'challenged_color': JSON.parse(document.getElementById('player-color').textContent), // Switches colors
+            'time': JSON.parse(document.getElementById('total-time-per-player').textContent) / 60,
+            'increment': JSON.parse(document.getElementById('increment').textContent),
+            'rated': JSON.parse(document.getElementById('rated').textContent)
+        });
+        gameSocket.send(challengeProposal);
+    }
+
+    // Remove rematch button
+    const rematchButton = document.getElementById('rematch-button');
+    rematchButton.style.display = 'none'; //visibility = 'hidden';
+
+    // Create waiting animation
+    const waitingAnimation = document.createElement('div');
+    waitingAnimation.classList.add('lds-ring');
+    waitingAnimation.id = 'waitingAnimation';
+    waitingAnimation.innerHTML = '<div></div><div></div><div></div><div></div>';
+    const rematchBox = document.getElementById('rematch-box');
+    rematchBox.appendChild(waitingAnimation);
+}
+
+function processChallengeResponse(data, gameSocket) {
+    if (data['response'] === 'accept'){
+        window.location.replace("http://" + window.location.host + "/game/" + data['game_id']);
+    }else{
+        const waitingAnimation = document.getElementById('waitingAnimation');
+        if (waitingAnimation)
+            waitingAnimation.remove();
+    }
+    //gameSocket.close();
+}
+
+// Function to handle accepting a challenge
+function acceptChallenge(data, gameSocket) {
+    var rated = false;
+    // If rated in data, to value
+    if (data['rated'] === 'true')
+        rated = true;
+    else{
+        rated = false;
+    }
+    const challengeResponse = JSON.stringify({
+        'action': 'challenge_response',
+        'challenger': data['challenger'],
+        'challenged': data['challenged'],
+        'player_color': data['player_color'],
+        'time': data['time'],
+        'increment': data['increment'],
+        'rated': rated,
+        'response': 'accept'
+    });
+    gameSocket.send(challengeResponse);
+}
+
+// Function to handle rejecting a challenge
+function rejectChallenge(data, gameSocket) {
+    // Implement your logic to reject the challenge with the given ID
+    const listItem = document.getElementById('challenge_' + data['challenger']);
+    listItem.remove();
+    const challengeResponse = JSON.stringify({
+        'action': 'challenge_response',
+        'challenger': data['challenger'],
+        'challenged': data['challenged'],
+        'response': 'reject'
+    });
+
+    // Remove rematch box
+    const rematchBox = document.getElementById('rematch-box');
+    rematchBox.style.display = 'none';
+
+    // Communicate rejection
+    gameSocket.send(challengeResponse);
+}
+
+function processChallengeRequest(data, gameSocket) {
+
+    // Check that game ID and opponent match
+    const gameId = JSON.parse(document.getElementById('game-id').textContent);
+    const opponent = JSON.parse(document.getElementById('opponent').textContent);
+    if (gameId && opponent && data['game_id'] === gameId && data['challenger'] === opponent) {
+        // Remove waiting animation
+        const waitingAnimation = document.getElementById('waitingAnimation');
+        if (waitingAnimation !== null)
+            waitingAnimation.remove()
+
+        // Get rematch button. If it doesn't exist, accept rematch directly?
+        const rematchButton = document.getElementById('rematch-button');
+        const _rematchBoxItems = document.getElementById('challenge_' + data['challenger']);
+        if (!rematchButton)
+            acceptChallenge(data, challengeSocket);
+        else if (_rematchBoxItems === null){ // only if rematch hasn't been proposed
+            const rematchBox = document.getElementById('rematch-box');
+            rematchBox.classList.add('rematch-box');
+
+            // Hide rematch button
+            rematchButton.style.display = 'none'; //visibility = 'hidden';
+
+            // Show rematch proposal
+            const rematchText = document.createElement('div');
+            rematchText.classList.add('rematch-text');
+            rematchText.textContent = 'Rematch? '
+
+            // Create buttons
+            const acceptRematchButton = document.createElement('button');
+            acceptRematchButton.classList.add('accept');
+            acceptRematchButton.innerHTML = '<span class="fa fa-check">';
+            acceptRematchButton.addEventListener('click', () => acceptChallenge(data, gameSocket));
+            const rejectRematchButton = document.createElement('button');
+            rejectRematchButton.classList.add('deny');
+            rejectRematchButton.innerHTML = '<span class="fa fa-close">';
+            rejectRematchButton.addEventListener('click', () => rejectChallenge(data, gameSocket));
+
+            // Rematch box items
+            const rematchBoxItems = document.createElement('div');
+            rematchBoxItems.classList.add('rematch-response');
+            rematchBoxItems.id = 'challenge_' + data['challenger'];
+            rematchBoxItems.appendChild(rejectRematchButton);
+            rematchBoxItems.appendChild(acceptRematchButton);
+
+            // Put everything together
+            rematchBox.appendChild(rematchText);
+            rematchBox.appendChild(rematchBoxItems);
+        }
+    }
+}
+
+/*
 Initialise websocket
  */
-function createWebsocket(gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs, PGN, timeEnd){
+function createWebsocket(gameId, playerColor, pColor, isSpectator, oColor, analysisFENs, PGN, timeEnd){
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
     var gameSocket = new WebSocket(
         ws_scheme
@@ -902,13 +1101,13 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
         switch (data['action']) {
             case 'FEN':
                 FEN = data['FEN'];
-                setupBoardFromFEN(data['FEN'], gameId, playerColor, playerUsername, isSpectator, opponentUsername, gameSocket);
+                setupBoardFromFEN(data['FEN'], gameId, playerColor, pColor, isSpectator, oColor, gameSocket);
                 break;
             case 'PGN':
                 if (PGN === undefined) {
                     PGN = data['PGN'];
                     if (parseInt(data['move_count']) > 0)
-                        createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs);
+                        createAnalysisPanel(PGN, gameId, playerColor, pColor, isSpectator, oColor, analysisFENs);
                 }
                 break;
             case 'place_fence':
@@ -921,10 +1120,10 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 setWallNumber(data);
 
                 // Set walls left flag
-                if (data['player'] === playerUsername)
+                if (data['player_color'] === pColor)
                     window.wallsLeft = data['remaining_fences'] > 0;
 
-                afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gameSocket);
+                afterMoveLogic(data, pColor, isSpectator, oColor, gameSocket);
                 break;
             case 'move_pawn':
                 // const sourceSquareId = 's' + '-' + data['source_row'] + '-' + data['source_col'];
@@ -933,7 +1132,7 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 const movePawnEvent = new CustomEvent('movePawnEvent', {'detail': data});
                 targetSquare.dispatchEvent(movePawnEvent);
 
-                afterMoveLogic(data, playerUsername, isSpectator, opponentUsername, gameSocket);
+                afterMoveLogic(data, pColor, isSpectator, oColor, gameSocket);
                 break;
             case 'pawn_moves':
                 // Show current valid pawn moves
@@ -949,7 +1148,7 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 }
                 break;
             case 'game_over':
-                setWinner(data, playerUsername, isSpectator, opponentUsername);
+                setWinner(data, pColor, isSpectator, oColor, gameSocket);
                 timeEnd = data['end_time'];
 
                 // Stop timer
@@ -976,6 +1175,13 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
                 if (!isSpectator)
                     rejectedDraw(data);
                 break;
+            case 'challenge_rematch':  // Receiving a rematch challenge request
+                if (!isSpectator)
+                    processChallengeRequest(data, gameSocket);
+                break;
+            case 'challenge_response':  // Receiving the answer to user's rematch challenge
+                processChallengeResponse(data, gameSocket);
+                break;
         }
     };
 
@@ -996,7 +1202,6 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
             // Reseting board ...
             board.innerHTML = '';
             createBoard(gameId, playerColor, isSpectator, gameSocket);
-            // setupBoardFromFEN(FEN, gameId, playerColor, playerUsername, opponentUsername);
         }
     }
 
@@ -1018,7 +1223,7 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
             }
 
             setTimeout(function() {
-                gameSocket = createWebsocket(gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs, PGN, timeEnd);
+                gameSocket = createWebsocket(gameId, playerColor, pColor, isSpectator, oColor, analysisFENs, PGN, timeEnd);
             }, 1000);
         }
     };
@@ -1030,15 +1235,6 @@ function createWebsocket(gameId, playerColor, playerUsername, isSpectator, oppon
 /*
 Player and game information
  */
-/*
-const gameId = JSON.parse(document.getElementById('game-id').textContent);
-const playerUsername = JSON.parse(document.getElementById('player').textContent);
-const opponentUsername = JSON.parse(document.getElementById('opponent').textContent);
-const playerColor = JSON.parse(document.getElementById('player-color').textContent);
-const isSpectator = playerColor === null;
-const timeEnd = JSON.parse(document.getElementById('time-end').textContent);
-var FEN = JSON.parse(document.getElementById('FEN').textContent);
-*/
 
 var activeUsername = '';
 window.myTurn = '';
@@ -1047,12 +1243,14 @@ var FEN = '';
 var analysisMoveNumber = 0;
 const scriptElement = document.querySelector(`script[src*="load_board.js"]`);
 FEN = scriptElement.dataset.fen;
-const gameId = scriptElement.dataset.gameid;  // JSON.parse(document.getElementById('game-id').textContent)
-const playerColor = scriptElement.dataset.playercolor;  // JSON.parse(document.getElementById('player-color').textContent);
+const gameId = scriptElement.dataset.gameid;
+const pColor = scriptElement.dataset.pcolor;  // Color of the player (bottom player)
+const oColor = scriptElement.dataset.ocolor;  // Color of the opponent (top player)
+const playerColor = scriptElement.dataset.playercolor;  // Color of the player. None if player is spectator
 const playerUsername = scriptElement.dataset.playerusername; // JSON.parse(document.getElementById('player').textContent);
 const opponentUsername = scriptElement.dataset.opponentusername; // JSON.parse(document.getElementById('opponent').textContent);
-const timeEnd = scriptElement.dataset.timeend; // JSON.parse(document.getElementById('opponent').textContent);
-const isSpectator = (playerColor !== 'white') & (playerColor !== 'black'); // (playerColor === 'None') || (playerColor === null);
+const timeEnd = scriptElement.dataset.timeend;
+const isSpectator = (playerColor !== 'white') & (playerColor !== 'black');
 const tutorial = scriptElement.dataset.tutorial !== undefined;
 var PGN = scriptElement.dataset.pgn;
 if (isSpectator)
@@ -1069,7 +1267,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     if (PGN !== undefined && PGN !== 'None' && tutorial) {
-        createAnalysisPanel(PGN, gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs);
+        createAnalysisPanel(PGN, gameId, playerColor, pColor, isSpectator, oColor, analysisFENs);
         analysisMoveNumber = 0;
     }
 
@@ -1078,14 +1276,14 @@ document.addEventListener("DOMContentLoaded", function() {
      */
     var gameSocket = null;
     if (!tutorial)
-        gameSocket = createWebsocket(gameId, playerColor, playerUsername, isSpectator, opponentUsername, analysisFENs, PGN, timeEnd);
+        gameSocket = createWebsocket(gameId, playerColor, pColor, isSpectator, oColor, analysisFENs, PGN, timeEnd);
 
     /*
     Setup board
     */
     window.onload = function (){
         createBoard(gameId, playerColor, isSpectator, gameSocket);
-        setupBoardFromFEN(FEN, gameId, playerColor, playerUsername, isSpectator, opponentUsername, gameSocket);
+        setupBoardFromFEN(FEN, gameId, playerColor, pColor, isSpectator, oColor, gameSocket);
         if (!tutorial)
             setupGameTerminationOptions(gameSocket, playerColor);
     };

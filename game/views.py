@@ -25,30 +25,40 @@ logger = logging.getLogger(__name__)
 def game(request, game_id):
     game = get_object_or_404(QuoridorGame, pk=game_id)
     player_username = request.user.username
+    if player_username == '':
+        player_username = 'anonymous'
+    # print('Player:', player_username)
+    # print('Request:', request.session.session_key)
 
     players = game.player_set.all()
-    opponent = None
     player_color = None
+    opponent = None
+    pcolor = None
+    ocolor = None
     for p in players:
-        if player_username == p.username:
+        if player_username == p.username or (player_username == 'anonymous' and request.session.session_key == p.session_key):
             player = p
             player_color = p.player_color
             player_rating = p.rating
+            pcolor = p.player_color
         else:
             opponent = p
             opponent_rating = p.rating
+            ocolor = p.player_color
         if p.player_color == 'white':
             player_white = p
             rating_white = p.rating
         elif p.player_color == 'black':
             player_black = p
             rating_black = p.rating
-
+    
     if player_color is None:  # Spectator
         player = player_white
         player_rating = rating_white
+        pcolor = 'white'
         opponent = player_black
         opponent_rating = rating_black
+        ocolor = 'black'
 
     # Check details match
     # if player_color is None:
@@ -57,11 +67,15 @@ def game(request, game_id):
     if game.time_end is not None:
         time_end = game.time_end.strftime('%Y/%m/%d %H:%M:%S')
 
+    player_username = player.username if player.username != '' else 'anonymous'
+    opponent_username = opponent.username if opponent.username != '' else 'anonymous'
     context = {'game': game,
             'player': player,
             'opponent': opponent,
-            'player_username': player.username,
-            'opponent_username': opponent.username,
+            'pcolor': pcolor,  # Color of player below
+            'ocolor': ocolor,  # Color of opponent above
+            'player_username': player_username,
+            'opponent_username': opponent_username,
             'player_color': player_color,
             'player_rating': int(player_rating),
             'opponent_rating': int(opponent_rating),

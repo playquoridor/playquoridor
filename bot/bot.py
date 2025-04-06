@@ -36,7 +36,7 @@ import time
 # Add argument
 parser = argparse.ArgumentParser()
 parser.add_argument('--server_ip', type=str, default='127.0.0.1')
-parser.add_argument('--protocol', type=str, default='wss')
+parser.add_argument('--protocol', type=str, default='ws')
 parser.add_argument('--max_concurrent_bots', default=16)
 parser.add_argument('--bind_port', type=int, default=9998)
 parser.add_argument('--game_port', type=int, default=8000)
@@ -65,11 +65,16 @@ def handle_match(client, bot_username, bot_color=None):
     player_color='random'
     if bot_color is not None:
         player_color = bot_color
+
+    print('Creating game...', client['username'], bot_username)
+    print('Session key:', client['session_key'])
     game = create_game(bot_username,
                        client['username'],
                        player_color=player_color,
                        time=client['time'],
-                       increment=client['increment'])
+                       increment=client['increment'],
+                       opponent_session_key=client['session_key'] if client['username'].lower() == 'anonymous' else None
+    )
     print('Game created! Id', game.game_id, client['username'], bot_username)
     send_match_details(client, game.game_id)
     return game
@@ -190,21 +195,25 @@ if __name__ == '__main__':
         elo = float(config_split[2])  # Potentially other details...
         elo_threshold = float(config_split[3])  # Unused
         channel_name = config_split[4]
-        bot_username = config_split[7] if len(config_split) > 7 else None
-        bot_color = config_split[8] if len(config_split) > 8 else None
+        t = int(config_split[5]) if len(config_split) > 5 or config_split[5] == 'None' else None
+        increment = int(config_split[6]) if len(config_split) > 6 or config_split[6] == 'None' else None
+        session_key = config_split[7] if len(config_split) > 7 else None
+        bot_username = config_split[8] if len(config_split) > 8 else None
+        bot_color = config_split[9] if len(config_split) > 9 else None
         client = {
             'username': username,
             'elo': elo,
             'elo_threshold': elo_threshold,
             'client': client,
             'channel_name': channel_name,
-            'time': int(config_split[5]),  # Time in minutes
-            'increment': int(config_split[6]),  # Increment in seconds
+            'time': t,  # Time in minutes
+            'increment': increment,  # Increment in seconds
+            'session_key': session_key, # Session key for anonymous users
             'bot_username': bot_username,
             'bot_color': bot_color
         }
 
-        if has_active_game(username):
+        if username.lower() != 'anonymous' and has_active_game(username):
             print(f"ERROR: {username} already has an active game")
             continue
 

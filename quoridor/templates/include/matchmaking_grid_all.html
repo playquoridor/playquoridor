@@ -4,38 +4,22 @@
     <script src="{% static 'matchmaking/js/join_matchmaking.js' %}"></script>
     <!-- Matchmaking -->
     <div class="matchmaking-grid" id="matchmaking-grid">
-        <button class="time-control-button" onclick="joinMatchmaking(event, 1, 0);">
+        <button class="time-control-button" onclick="joinMatchmaking(event, 1, 0, false);">
             <span class="time-duration">1 + 0</span>
             <span class="time-type">Bullet</span>
         </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 2, 1);">
-            <span class="time-duration">2 + 1</span>
-            <span class="time-type">Bullet</span>
-        </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 3, 0);">
-            <span class="time-duration">3 + 0</span>
-            <span class="time-type">Blitz</span>
-        </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 3, 2);">
-            <span class="time-duration">3 + 2</span>
-            <span class="time-type">Blitz</span>
-        </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 5, 0);">
-            <span class="time-duration">5 + 0</span>
-            <span class="time-type">Blitz</span>
-        </button>
-        <button class="time-control-button highlight-button" onclick="joinMatchmaking(event, 5, 3);">
+        <button class="time-control-button" onclick="joinMatchmaking(event, 5, 3, false);">
             <span class="time-duration"> 5 + 3 </span>
             <span class="time-type"> Blitz </span>
         </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 10, 0);">
-            <span class="time-duration">10 + 0</span>
-            <span class="time-type">Rapid</span>
-        </button>
-        <button class="time-control-button" onclick="joinMatchmaking(event, 10, 5);">
+        <button class="time-control-button" onclick="joinMatchmaking(event, 10, 5, false);">
             <span class="time-duration">10 + 5</span>
             <span class="time-type">Rapid</span>
         </button>
         <!-- Add more buttons for other time controls -->
+        <button class="time-control-button highlight-button" onclick="joinMatchmaking(event, 5, 3, true);">
+            <span class="time-duration">5 + 3</span>
+            <span class="time-type">Blitz (unrated)</span>
+        </button>
     </div>
 </div>

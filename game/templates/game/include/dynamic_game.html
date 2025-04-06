@@ -5,10 +5,14 @@
     {% flip_board game player.username as flip_board_flag %}
     <!-- <p class="date"> {{game.game_time}} </p> -->
 
-    <div class="player-bar top-borders" id="bar-{{opponent.username}}">
-        <span class="player-info" id="player-{{opponent.username}}">
-            <span class="dot {%get_player_color game opponent.username%}"></span>
+    <div class="player-bar top-borders" id="bar-{{ocolor}}">
+        <span class="player-info" id="player-{{ocolor}}">
+            <span class="dot {{ocolor}}"></span>
+                {% if opponent.username == '' or opponent.username.lower == 'anonymous' %}
+                <a class='user'>
+                {% else %}
                 <a class='user' href="{% url 'profile:show_profile' opponent.username %}">
+                {% endif %}
                     {% if opponent.user.userdetails.bot %}
                         <span class="bot-text">
                             <b> BOT </b>
@@ -19,12 +23,12 @@
                         ({% convert2int opponent.rating %})
                     </span>
                 </a>
-            <span id="{{opponent.username}}_delta_rating"> {% rating_delta opponent.delta_rating %} </span>
-            <span id="turn_{{opponent.username}}"> </span>
+            <span id="{{ocolor}}_delta_rating"> {% rating_delta opponent.delta_rating %} </span>
+            <span id="turn_{{ocolor}}"> </span>
         </span>
         <span class="walls-left white-text">
-            <span class="dot {%get_online_status opponent.user%}"></span>
-            <span id="walls_{{opponent.username}}"> walls </span>
+            <span class="dot {%get_online_status opponent %}"></span>
+            <span id="walls_{{ocolor}}"> walls </span>
         </span>
     </div>
 
@@ -40,16 +44,22 @@
                 data-fen="{{ game.FEN }}"
                 data-gameid="{{ game.game_id }}"
                 data-opponentusername="{{ opponent.username }}"
+                data-pcolor="{{ pcolor }}"
+                data-ocolor="{{ ocolor }}"
                 data-playercolor="{{ player_color }}"
                 data-playerusername="{{ player.username }}"
                 data-timeend="{{ time_end }}"
         ></script>
     </div>
 
-    <div class="player-bar bottom-borders" id="bar-{{player.username}}">
-        <span class="player-info" id="player-{{player.username}}">
-            <span class="dot {%get_player_color game player.username%}"></span>
-            <a class="user" href="{% url 'profile:show_profile' player.username %}">
+    <div class="player-bar bottom-borders" id="bar-{{pcolor}}">
+        <span class="player-info" id="player-{{pcolor}}">
+            <span class="dot {{ pcolor }}"></span>
+            {% if player.username == '' or player.username.lower == 'anonymous' %}
+            <a class="user">
+            {% else %}
+            <a class="user" href="{% url 'profile:show_profile' player.username %}"></a>
+            {% endif %}
                 {% if player.user.userdetails.bot %}
                     <span class="bot-text">
                         <b> BOT </b>
@@ -60,12 +70,12 @@
                     ({% convert2int player.rating%})
                 </span>
             </a>
-            <span id="{{player.username}}_delta_rating"> {% rating_delta player.delta_rating %} </span>
-            <span id="turn_{{player.username}}"> </span>
+            <span id="{{pcolor}}_delta_rating"> {% rating_delta player.delta_rating %} </span>
+            <span id="turn_{{pcolor}}"> </span>
         </span>
         <span class="walls-left white-text">
-            <span class="dot {%get_online_status player.user%}"></span>
-            <span id="walls_{{player.username}}"> walls </span>
+            <span class="dot {%get_online_status player %}"></span>
+            <span id="walls_{{pcolor}}"> walls </span>
         </span>
     </div>
 </div>

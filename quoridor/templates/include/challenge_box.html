@@ -4,7 +4,7 @@
         <div class="title">
             Active game
         </div>
-        {% include "game/include/static_game.html" with game=active_game player=active_game_player opponent=active_game_opponent %}
+        {% include "game/include/static_game.html" with game=active_game player=active_game_player opponent=active_game_opponent player_username=active_game_player_username opponent_username=active_game_opponent_username %}
     </div>
     {% else %}
         <div class="title">

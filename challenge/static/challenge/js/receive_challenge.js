@@ -133,12 +133,20 @@ function receiveChallenge(username){
 
 // Function to handle accepting a challenge
 function acceptChallenge(data, challengeSocket) {
+    var rated = false;
+    // If rated in data, to value
+    if (data['rated'] === 'true')
+        rated = true;
+    else{
+        rated = false;
+    }
     const challengeResponse = JSON.stringify({
         'action': 'challenge_response',
         'challenger': data['challenger'],
         'player_color': data['player_color'],
         'time': data['time'],
         'increment': data['increment'],
+        'rated': rated,
         'response': 'accept'
     });
     challengeSocket.send(challengeResponse);

@@ -9,8 +9,19 @@ import time
 
 class MatchMakingConsumer(WebsocketConsumer):
     def connect(self):
+        # Ensure session exists
+        if not self.scope["session"].session_key:
+            # Reject
+            self.close()
+            return
+        
+        session_key = self.scope['session'].session_key
+        self.session_key = session_key
+
         # Get player information
         self.username = self.scope['user'].username
+        if self.username == '':
+            self.username = 'Anonymous'
 
         self.rating = None  # Determined in request_match
         self.rating_threshold = 300
@@ -74,7 +85,53 @@ class MatchMakingConsumer(WebsocketConsumer):
                 # print('User:', self.scope['user'], 'Rating: ', rating, 'Control', control)
                 self.rating = rating
 
-                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}'
+                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}/{self.session_key}'
+                client.send(message.encode())
+            except ConnectionRefusedError as e:
+                print('Matchmaking failed', e)
+
+    def is_anonymous(self):
+        return self.username == 'Anonymous'
+
+    def request_anonymous_match(self, text_data, timeout=30):
+        # Check if player has active games. Important: assumes only last game can be active (!)
+        # latest_player = Player.objects.filter(user__username=self.username, game__ended=False)
+        has_games = True
+        try:
+            latest_player = Player.objects.filter(user__username=self.username).latest('game__game_time')
+        except Player.DoesNotExist:
+            has_games = False
+
+        # Check if player has active games
+        if has_games and not latest_player.game.ended:
+            game = latest_player.game
+            player_set = game.player_set.all()
+            text_data = {
+                'action': 'matchmaking_failed',
+                'reason': 'Game already in progress',
+                'game_id': game.game_id,
+                'white_player_username': player_set[0].username,
+                'black_player_username': player_set[1].username,
+                'white_player_rating': int(player_set[0].rating),
+                'black_player_rating': int(player_set[1].rating)
+            }
+            self.send(text_data=json.dumps(text_data))
+        else:
+            try:
+                # Find match or join matchmaking pool
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect(('127.0.0.1', 9999))
+                client.settimeout(timeout)
+
+                t = text_data['time']
+                increment = text_data["increment"]
+                # self.scope['user'].userdetails.check_or_create_rating(control)
+                # rating = self.scope['user'].userdetails.get_rating(control).rating
+                # print('User:', self.scope['user'], 'Rating: ', rating, 'Control', control)
+                # self.rating = rating
+                rating = 1500
+
+                message = f'match_anonymous/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}/{self.session_key}'
                 client.send(message.encode())
             except ConnectionRefusedError as e:
                 print('Matchmaking failed', e)
@@ -90,7 +147,6 @@ class MatchMakingConsumer(WebsocketConsumer):
             game_ended = latest_player.game.ended()            
         except Player.DoesNotExist:
             has_games = False
-        games = [g.game for g in Player.objects.filter(user__username=self.scope['user'].username, game__abort=False)]
 
         # Check if player has active games
         if has_games and not game_ended:
@@ -116,13 +172,16 @@ class MatchMakingConsumer(WebsocketConsumer):
                 t = text_data['time']
                 increment = text_data['increment']
                 control = time_control(60 * t, increment)
-                self.scope['user'].userdetails.check_or_create_rating(control)
-                rating = self.scope['user'].userdetails.get_rating(control).rating
-                self.rating = rating
-                
-                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}'
 
-                print('TEXT DATA', text_data)
+                # If anonymous user, set rating to 1500
+                if self.is_anonymous():
+                    rating = 1500
+                else:
+                    self.scope['user'].userdetails.check_or_create_rating(control)
+                    rating = self.scope['user'].userdetails.get_rating(control).rating
+                
+                message = f'match_client/{self.username}/{rating}/{self.rating_threshold}/{self.channel_name}/{t}/{increment}/{self.session_key}'
+
                 if 'bot_username' in text_data and 'bot_color' in text_data:
                     message += f'/{text_data["bot_username"]}/{text_data["bot_color"]}'
 
@@ -150,6 +209,8 @@ class MatchMakingConsumer(WebsocketConsumer):
         print('Contents', text_data)
         if text_data['action'] == 'request_match':
             self.request_match(text_data)
+        elif text_data['action'] == 'request_anonymous_match':
+            self.request_anonymous_match(text_data)
         elif text_data['action'] == 'request_bot_match':
             self.request_bot_match(text_data)
         # elif text_data['action'] == 'receive_match_details':

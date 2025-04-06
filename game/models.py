@@ -493,18 +493,6 @@ class QuoridorGame(SluggedModel):
                     opponent_ratings.append(op.rating)
                     opponent_deviations.append(op.deviation)
 
-            # Append last results
-            # scores.append(score)
-            # opponent_ratings.append(opponent.rating)
-            # opponent_deviations.append(opponent.deviation)
-            # print('Scores', scores)
-            # print('Op ratings', opponent_ratings)
-            # print('Op deviations', opponent_deviations)
-
-            # Calculate new ratings
-            # opponent_ratings = [opponent.rating]
-            # opponent_deviations = [opponent.deviation]
-            # scores = [score]
             user_details = player.user.userdetails
             rating_, deviation_, volatility_ = update_user_ratings(rating=player.rating,
                                                                    deviation=player.deviation,
@@ -568,12 +556,17 @@ class Player(models.Model):
     deviation = models.FloatField(default=None, null=True)
     volatility = models.FloatField(default=None, null=True)
 
+    # Session keys for anonymous users
+    session_key = models.CharField(max_length=32, null=True)
+
     @property
     def player_color(self):
         return PLAYER_COLORS[self.color]
 
     @property
     def username(self):
+        if self.user.username == '':
+            return 'Anonymous'
         return self.user.username
 
     def player_wins(self):

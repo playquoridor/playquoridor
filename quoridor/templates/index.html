@@ -12,6 +12,7 @@
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" async></script>
+    <script src="{% static 'matchmaking/js/join_matchmaking.js' %}"></script>
 
     <div class="hidden pointer" id="join-active-game">
         <!-- <button id="join-active-game"></button> -->
@@ -33,9 +34,19 @@
                         Welcome
                     </div>
                     <div class="small-padding">
-                        <p> Welcome! PlayQuoridor is a free/libre, no-ads, open source Quoridor server powered by volunteers and donations. </p>
+                        <p> Welcome! PlayQuoridor is a free/libre, no-ads, open source Quoridor server.</p>
 
-                        <p> To get started, <a href="{% url 'register:register' %}?next={{ request.path }}">sign up</a> or <a href="{% url 'login' %}?next={{ request.path }}">log in</a> if you already have an account. </p>
+                        <br>
+                        <p class="center"><b>Play a game </b></p>
+
+                        <button class="time-control-button highlight-button" onclick="joinMatchmaking(event, 5, 3, true);">
+                            <span class="time-duration">5 + 3</span>
+                            <span class="time-type">Blitz (unrated)</span>
+                        </button>
+                        
+                        <br><br
+
+                        <p> <b>Already have an account?</b> <a href="{% url 'login' %}?next={{ request.path }}">Log in</a> or <a href="{% url 'register:register' %}?next={{ request.path }}">sign up</a> to get started! </p>
                         
                         <div id="g_id_onload"
                             data-client_id="47817519507-pl0tgbv1re0trg5855s2o6nva6fqef16.apps.googleusercontent.com"
@@ -68,7 +79,7 @@
                     <div class="title">
                         Top rated game
                     </div>
-                    {% include "game/include/static_game.html" with game=top_active_game player=top_active_game_player opponent=top_active_game_opponent %}
+                    {% include "game/include/static_game.html" with game=top_active_game player=top_active_game_player opponent=top_active_game_opponent player_username=top_active_game_player_username opponent_username=top_active_game_opponent_username %}
                 </div>
             </div>
             {% else %}

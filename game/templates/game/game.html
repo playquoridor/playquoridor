@@ -12,25 +12,33 @@
     {{ game.game_id|json_script:"game-id" }}
     {{ player.username|json_script:"player" }}
     {{ opponent.username|json_script:"opponent" }}
+    {{ opponent.session_key|json_script:"opponent-sk" }}
     {{ player_color|json_script:"player-color" }}
     {{ flip_board|json_script:"flip-board" }}
     {{ time_end|json_script:"time-end" }}
     {{ game.increment|json_script:"increment" }}
     {{ opponent.user.userdetails.bot|json_script:"opponent-bot" }}
     {{ game.total_time_per_player|json_script:"total-time-per-player" }}
+    {{ game.rated|json_script:"rated" }}
 
     <div class="container" id="main-container">
         {% include "game/include/dynamic_game.html" with game=game player=player opponent=opponent time_end=time_end %}
         <div class="game-sidebar">
             <div class="game-sidebar-container" id="game-sidebar-container">
                 <!-- Time -->
-                <div class='timer' id='timer-{{opponent.username}}'>
+                <div class='timer' id='timer-{{ocolor}}'>
                     {{game.total_time_per_player}}
                 </div>
 
                 <!-- Game options -->
                 <div id="rematch-box" class="center btn-group-vertical hidden">
-                    <button class="btn btn-secondary" id="rematch-button" onclick="sendRematchChallenge(); return false;">Rematch</button>
+                    <button class="btn btn-secondary" id="rematch-button">Rematch</button>
+                    <!-- {% if player.is_authenticated %}
+                        <button class="btn btn-secondary" id="rematch-button" onclick="sendRematchChallenge(); return false;">Rematch</button>
+                    {% else %}
+                        <button class="btn btn-secondary hidden" id="rematch-button" onclick="sendRematchChallenge(); return false;">Rematch</button>
+                    {% endif %}
+                    -->
                 </div>
 
                 <div class="game-details" id="game-details">
@@ -64,7 +72,7 @@
                 </div>
 
                 <!-- Time -->
-                <div class='timer' id='timer-{{player.username}}'>
+                <div class='timer' id='timer-{{pcolor}}'>
                     {{game.total_time_per_player}}
                 </div>
             </div>

@@ -1,5 +1,5 @@
 
-function joinMatchmaking(event, time, increment){
+function joinMatchmaking(event, time, increment, anonymous) {
     event.preventDefault();
     //console.log(sessionStorage.getItem('matchmakingClicked'));
     const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -40,8 +40,12 @@ function joinMatchmaking(event, time, increment){
 
     matchmakingSocket.onopen = function (e) {
         // TODO: Might need to wait for connection
+        var action = 'request_match';
+        if (anonymous) {
+            action = 'request_anonymous_match';
+        }
         const requestMatch = JSON.stringify({
-            'action': 'request_match',
+            'action': action,
             'time': time,
             'increment': increment,
             'bot_pool': true
@@ -83,8 +87,15 @@ function joinMatchmaking(event, time, increment){
     waitingAnimationContainer.id = 'waitingAnimationContainer';
     waitingAnimationContainer.appendChild(waitingDiv);
 
-    const matchmakingGrid = document.getElementById('matchmaking-container');
-    matchmakingGrid.appendChild(waitingAnimationContainer);
-    // matchmakingGrid.appendChild(waitingDiv);
+    // Find the actual button even if a child (e.g., <span>) was clicked
+    const clickedButton = event.currentTarget;
+    clickedButton.disabled = true;
+    
+    // Make the button relatively positioned so the spinner can be absolutely positioned inside it
+    clickedButton.style.position = 'relative';
+    clickedButton.appendChild(waitingAnimationContainer);
 
+    // const matchmakingGrid = document.getElementById('matchmaking-container');
+    // matchmakingGrid.appendChild(waitingAnimationContainer);
+    // matchmakingGrid.appendChild(waitingDiv);
 }

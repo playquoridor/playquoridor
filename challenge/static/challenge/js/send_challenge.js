@@ -42,7 +42,8 @@ function sendChallenge(prefixId){
                 'action': 'challenge_proposal',
                 'challenger_color': 'random', // document.querySelector('input[name="player_color"]:checked').value,
                 'time': time,
-                'increment': increment
+                'increment': increment,
+                'rated': true
             });
             console.log('Challenge proposal', challengeProposal);
             challengeSocket.send(challengeProposal);
@@ -119,7 +120,7 @@ function sendRematchChallenge(){
                 'increment': JSON.parse(document.getElementById('increment').textContent),
                 'bot_pool': true,
                 'bot_username': challengedUsername,
-                'bot_color': JSON.parse(document.getElementById('player-color').textContent)
+                'bot_color': JSON.parse(document.getElementById('player-color').textContent),
             });
             console.log('Request match', requestMatch);
             matchmakingSocket.send(requestMatch);
@@ -175,7 +176,8 @@ function sendRematchChallenge(){
                 'game_id': JSON.parse(document.getElementById('game-id').textContent),
                 'challenged_color': JSON.parse(document.getElementById('player-color').textContent), // Switches colors
                 'time': JSON.parse(document.getElementById('total-time-per-player').textContent) / 60,
-                'increment': JSON.parse(document.getElementById('increment').textContent)
+                'increment': JSON.parse(document.getElementById('increment').textContent),
+                'rated': JSON.parse(document.getElementById('rated').textContent)
             });
             console.log('Challenge proposal', challengeProposal);
             console.log('Color', JSON.parse(document.getElementById('player-color').textContent));

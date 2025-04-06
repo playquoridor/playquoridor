@@ -1,19 +1,10 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from game.game_utils import create_game
+from game.game_utils import create_game, user_has_active_game
 from game.models import UserDetails
 from django.db.models import F
 from game.models import Player
-
-
-def user_has_active_game(username):
-    # Check if user has an active game. If yes, automatically reject challenge
-    # (allowing one active game at a time to prevent concurrent rating updates)
-    return Player.objects.filter(user__username=username,
-                                 game__winning_player=None,
-                                 game__abort=False,
-                                 game__draw=False).exists()
 
 
 # Send to single channel layer: https://channels.readthedocs.io/en/stable/topics/channel_layers.html#single-channels
@@ -22,9 +13,12 @@ class ChallengeConsumer(WebsocketConsumer):
     def connect(self):
         self.target_username = self.scope['url_route']['kwargs']['username']
         self.group_name = f'challenge_{self.target_username}'
+        if self.target_username.lower() == 'anonymous':
+            self.target_username = 'anonymous'
 
         # Get player information
         self.source_username = self.scope['user'].username
+        self.session_key = self.scope['session'].session_key
 
         # Update user: online
         if self.source_username == self.target_username:
@@ -62,12 +56,13 @@ class ChallengeConsumer(WebsocketConsumer):
         )
 
     def propose_challenge(self, text_data):
-        assert self.source_username != self.target_username
+        assert self.source_username != self.target_username or self.target_username.lower() == 'anonymous'
         text_data['challenger'] = self.source_username
+        print('User ', self.source_username, 'sending challenge...', text_data)
 
         # Check if user has an active game. If yes, automatically reject challenge
         # (allowing one active game at a time to prevent concurrent rating updates)
-        if user_has_active_game(self.source_username):
+        if user_has_active_game(self.source_username, session_key=self.session_key):
             text_data = {
                 'action': 'challenge_response',
                 'response': 'reject'
@@ -90,7 +85,6 @@ class ChallengeConsumer(WebsocketConsumer):
             text_data['increment'] = increment
             text_data['time'] = t
             """
-            print('User ', self.source_username, 'sending challenge...')
 
             async_to_sync(self.channel_layer.group_send)(
                 self.group_name, {'type': 'challenge_message',
@@ -103,11 +97,14 @@ class ChallengeConsumer(WebsocketConsumer):
         if text_data['response'] == 'accept':  # Challenge accepted
             time = int(text_data['time']) if 'time' in text_data else None
             increment = int(text_data['increment']) if 'increment' in text_data else None
+            rated = bool(text_data['rated']) if 'rated' in text_data else True
+            print('Accepted', text_data)
             game = create_game(player_username=self.target_username,
                                opponent_username=text_data['challenger'],
                                player_color=text_data['player_color'],
                                time=time,
-                               increment=increment)
+                               increment=increment,
+                               rated=rated)
             text_data['game_id'] = game.game_id
         else:
             # Challenge rejected
@@ -135,9 +132,41 @@ class ChallengeConsumer(WebsocketConsumer):
         # Receive message from group
         print('Message received from group: ', contents_dict, self.source_username)
         text_data = contents_dict['contents']
-        if text_data['action'] == 'challenge_proposal' or text_data['action'] == 'challenge_rematch':
+        if text_data['action'] == 'challenge_proposal':
             # If consumer corresponds to challenged user, send message
             if self.source_username == self.target_username:
+                # Check if user has an active game. If yes, automatically reject challenge
+                # (allowing one active game at a time to prevent concurrent rating updates)
+                if user_has_active_game(self.source_username):
+                    text_data = {
+                        'action': 'challenge_response',
+                        'challenger': text_data['challenger'],
+                        'response': 'reject'
+                    }
+                    # TODO: Send reason? e.g. with game ID?
+                    self.respond_challenge(text_data)
+                else:
+                    # Send message to websocket
+                    self.send(text_data=json.dumps(text_data))
+        elif text_data['action'] == 'challenge_rematch':
+            if self.target_username.lower() == 'anonymous':
+                # TODO: Rematch request to anonymous users NOT working yet. Reason: anonymous users are not connected/listening to this websocket
+                # Get players from game ID
+                game_players = Player.objects.filter(game__game_id=text_data['game_id'])
+
+                # Find session ID of opponent player
+                challenged_session_key = None
+                for p in game_players:
+                    if p.username.lower() == 'anonymous' and p.session_key != self.session_key:
+                        challenged_session_key = p.session_key
+                text_data['challenged_session_key'] = challenged_session_key
+
+                if self.source_username == 'anonymous' and self.session_key == challenged_session_key:
+                    # Send message to websocket
+                    self.send(text_data=json.dumps(text_data))
+
+            # If consumer is not anonymous and corresponds to challenged user, send message
+            elif self.source_username == self.target_username:
                 # Check if user has an active game. If yes, automatically reject challenge
                 # (allowing one active game at a time to prevent concurrent rating updates)
                 if user_has_active_game(self.source_username):

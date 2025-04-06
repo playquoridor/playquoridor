@@ -10,6 +10,9 @@ import random
 
 def active_game_context(request):
     context = {'active_game_exists': False}
+    player_username = request.user.username
+    if player_username == '':
+        player_username = 'Anonymous'
 
     # If user is authorised, check if game is in progress
     if request.user.is_authenticated:
@@ -21,17 +24,28 @@ def active_game_context(request):
             if not game.ended():  # Game not finished
                 opponent = None
                 player = None
+                player_username_ = None
+                opponent_username_ = None
                 for p in game.player_set.all():
-                    if p.username == request.user.username:
+                    if player_username == p.username or (player_username.lower() == 'anonymous' and request.session.session_key == p.session_key): # p.username == request.user.username:
                         player = p
+                        player_username_ = p.username
                     else:
                         opponent = p
+                        opponent_username_ = p.username
+
+                if player_username_ == '':
+                    player_username_ = 'Anonymous'
+                if opponent_username_ == '':
+                    opponent_username_ = 'Anonymous'
                 context = {
                     'active_game_exists': True,
                     'active_game': game,
                     'active_game_id': game.game_id,
                     'active_game_player': player,
                     'active_game_opponent': opponent,
+                    'active_game_player_username': player_username_,
+                    'active_game_opponent_username': opponent_username_,
                 }
         except Player.DoesNotExist:
             pass
@@ -101,17 +115,17 @@ def leaderboard_context(request, k=50):
         top_ratings = Rating.objects.order_by('rating')[::-1][:100]
         # top_rated_user_details = [r.user_details for r in top_ratings]
 
-        top_ratings_bullet = list(filter(lambda r: r.get_time_control() == 'bullet', top_ratings))[:k]
-        top_ratings_blitz = list(filter(lambda r: r.get_time_control() == 'blitz', top_ratings))[:k]
-        top_ratings_rapid = list(filter(lambda r: r.get_time_control() == 'rapid', top_ratings))[:k]
-        top_ratings_standard = list(filter(lambda r: r.get_time_control() == 'standard', top_ratings))[:k]
+        top_ratings_bullet = list(filter(lambda r: r.get_time_control() == 'bullet' and r.user_details.user.username.lower() != 'anonymous', top_ratings))[:k]
+        top_ratings_blitz = list(filter(lambda r: r.get_time_control() == 'blitz' and r.user_details.user.username.lower() != 'anonymous', top_ratings))[:k]
+        top_ratings_rapid = list(filter(lambda r: r.get_time_control() == 'rapid' and r.user_details.user.username.lower() != 'anonymous', top_ratings))[:k]
+        # top_ratings_standard = list(filter(lambda r: r.get_time_control() == 'standard', top_ratings))[:k]
 
     context = {
         # 'top_ratings': top_ratings,
         'top_ratings_bullet': top_ratings_bullet,
         'top_ratings_blitz': top_ratings_blitz,
         'top_ratings_rapid': top_ratings_rapid,
-        'top_ratings_standard': top_ratings_standard
+        # 'top_ratings_standard': top_ratings_standard
     }
     return context
 
@@ -136,6 +150,10 @@ def online_users_context(request, k=50):
 #####################
 # @login_required
 def index(request):
+    # Force session creation (useful for anonymous users)
+    if not request.session.session_key:
+        request.session.save()
+
     context = active_game_context(request)
     active_game_id = context['active_game_id'] if 'active_game_id' in context else None
     context = {**context,

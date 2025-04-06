@@ -12,10 +12,8 @@
         <label class="label-tab" for="blitz-tab-online">Blitz</label>
         <input class="input-tab" id="rapid-tab-online" type="radio" name="tabs-online">
         <label class="label-tab" for="rapid-tab-online">Rapid</label>
-        <input class="input-tab" id="standard-tab-online" type="radio" name="tabs-online">
-        <label class="label-tab" for="standard-tab-online">Standard</label>
 
-        {% with 'bullet blitz rapid standard' as TIME_CONTROLS %}
+        {% with 'bullet blitz rapid' as TIME_CONTROLS %}
             {% for control in TIME_CONTROLS.split %}
                 <section class="section-tab" id="{{control}}-content-online">
                     <form onsubmit="sendChallenge('{{control}}'); return false;" method="post">

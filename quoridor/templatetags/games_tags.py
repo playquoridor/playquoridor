@@ -1,3 +1,4 @@
+import django
 from django import template
 from django.utils.safestring import mark_safe
 
@@ -5,10 +6,13 @@ register = template.Library()
 
 
 @register.simple_tag
-def get_player_color(game, username):
+def get_player_color(game, p):
     player_color = None
     for player in game.player_set.all():
-        if player.user.username == username:
+        # if player.user.username.lower() == 'anonymous' and p.user.username.lower() == 'anonymous' and p.session_key == player.session_key:
+        #     player_color = player.player_color
+        #     break
+        if player.user.username == p.user.username:
             player_color = player.player_color
             break
     return player_color
@@ -52,6 +56,17 @@ def get_opponent(game, username):
             break
     return player
 
+@register.simple_tag
+def get_username(user):
+    if user is None or user.username == '':
+        return 'Anonymous'
+    return user.username
+
+@register.simple_tag
+def player_rating(player):
+    if player is None or player.username == '':
+        return ''
+    return int(player.rating)
 
 @register.simple_tag
 def get_player(game, username):
@@ -92,7 +107,7 @@ def convert2int(value):
 
 @register.simple_tag
 def rating_delta(value):
-    if value is None:
+    if value is None or value == '':
         return ''
     if value >= 0:
         out = f'<span class="positive-delta">+{int(value)}</span>'
@@ -117,7 +132,13 @@ def convert_time_control(t):
 
 
 @register.simple_tag
-def get_online_status(user):
+def get_online_status(player):
+    # Check if player is a Django user
+    if isinstance(player, django.contrib.auth.models.User):
+        return 'online' if player.userdetails.online > 0 else 'offline'
+    if player is None or player.username == '':
+        return 'offline'
+    user = player.user
     if user.userdetails.online > 0:
         return 'online'
     return 'offline'
