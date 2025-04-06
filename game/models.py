@@ -438,6 +438,11 @@ class QuoridorGame(SluggedModel):
         if self.winning_player is None:
             return None
         return self.winning_player.color
+    
+    def winner_color_str(self):
+        if self.winning_player is None:
+            return None
+        return PLAYER_COLORS[self.winning_player.color]
 
     def ended(self):
         # return self.winning_player is not None or self.draw or self.abort
@@ -447,12 +452,15 @@ class QuoridorGame(SluggedModel):
         return self.abort
 
     @transaction.atomic
-    def set_winner(self, winner_username, draw=False, abort=False):
+    def set_winner(self, winner_username, winner_color=None, draw=False, abort=False):
         if not self.ended():
             if abort:
                 self.abort = True
             elif draw:
                 self.draw = True
+            elif winner_color is not None:
+                winner = self.player_set.filter(color=PLAYER_COLORS_INV[winner_color])[0]
+                self.winning_player = winner
             else:
                 winner = self.player_set.filter(user__username=winner_username)[0]
                 self.winning_player = winner

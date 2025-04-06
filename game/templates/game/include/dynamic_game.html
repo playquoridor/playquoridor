@@ -58,7 +58,7 @@
             {% if player.username == '' or player.username.lower == 'anonymous' %}
             <a class="user">
             {% else %}
-            <a class="user" href="{% url 'profile:show_profile' player.username %}"></a>
+            <a class="user" href="{% url 'profile:show_profile' player.username %}">
             {% endif %}
                 {% if player.user.userdetails.bot %}
                     <span class="bot-text">

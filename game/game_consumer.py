@@ -120,7 +120,7 @@ class GameConsumer(WebsocketConsumer):
         except GameOver as e:
             if not self.game.ended():
                 winner_username = self.color2username[e.winner]
-                self.finish_game(winner_username)
+                self.finish_game(winner_username, winner_color=e.winner)
             else:
                 self.send_game_over_message()
 
@@ -434,7 +434,7 @@ class GameConsumer(WebsocketConsumer):
                 text_data_json['last_color'] = active_player
                 text_data_json['active_username'] = self.color2username[active_player]
                 text_data_json['winner_username'] = winner_username
-                text_data_json['winner_color'] = self.get_winner_color(winner_username)
+                text_data_json['winner_color'] = e.winner  # self.get_winner_color(winner_username)
                 text_data_json['just_finished'] = True
 
                 # Set remaining time
@@ -451,7 +451,7 @@ class GameConsumer(WebsocketConsumer):
                 )
 
                 # Finish game
-                self.finish_game(winner_username, draw=draw, draw_reason='Three move repetition' if draw else None)
+                self.finish_game(winner_username, winner_color=e.winner, draw=draw, draw_reason='Three move repetition' if draw else None)
 
                 print(e, print_board(self.board_logic))
         except InvalidMove as e:
@@ -492,7 +492,7 @@ class GameConsumer(WebsocketConsumer):
         if self.game.is_rated() and not self.is_spectator() and not self.game.ratings_updated(player_color):
             self.game.update_rating(player_color, winner_username, draw)
 
-    def finish_game(self, winner_username, draw=False, abort=False, draw_reason=None):
+    def finish_game(self, winner_username, winner_color=None, draw=False, abort=False, draw_reason=None):
         """
         Assumes game has not ended
         Sets winner, updates player ratings, and messages consumers to inform about game over
@@ -500,7 +500,7 @@ class GameConsumer(WebsocketConsumer):
         assert winner_username != ''
 
         # Set winning user
-        self.game.set_winner(winner_username, draw=draw, abort=abort)
+        self.game.set_winner(winner_username, winner_color=winner_color, draw=draw, abort=abort)
 
         if not abort:
             # Update ratings
@@ -511,7 +511,7 @@ class GameConsumer(WebsocketConsumer):
         text_data = {
             'action': 'game_over',
             'winner_username': winner_username,
-            'winner_color': self.get_winner_color(winner_username),
+            'winner_color': self.game.winner_color_str(), # self.get_winner_color(winner_username),
             'draw': draw,
             'draw_reason': draw_reason,
             'abort': abort,
@@ -569,10 +569,11 @@ class GameConsumer(WebsocketConsumer):
     def send_game_over_message(self):
         # Game over message
         winner_username = self.game.winner_username()
+        winner_color = self.game.winner_color_str()
         text_data = {
             'action': 'game_over',
             'winner_username': winner_username,
-            'winner_color': self.get_winner_color(winner_username),
+            'winner_color': winner_color, # self.get_winner_color(winner_username),
             'abort': self.game.abort,
             'draw': self.game.draw,
             'game_id': self.game.game_id
@@ -602,28 +603,31 @@ class GameConsumer(WebsocketConsumer):
         # TODO: 2+ players
         if not self.game.ended():
             losing_color = text_data['player_color']
+            print('Resigning...', losing_color)
             winning_color = self.next_active_player(losing_color)
             winner_username = self.color2username[winning_color]
-            self.finish_game(winner_username)
+            self.finish_game(winner_username, winner_color=winning_color)
 
-    def offer_draw(self, text_data):
+    def offer_draw(self, text_data, bounce=True):
         if self.is_spectator(): # Spectator
             return
 
         if self.player_color == text_data['player_color']:
-            # User proposing message to other player
-            async_to_sync(self.channel_layer.group_send)(
-                self.game_group_name, {'type': 'game_message',
-                                       'contents': text_data,
-                                       'channel_name': self.channel_name,
-                                       'donotsend': True
-                                       }
-            )
+            if bounce:
+                # User proposing message to other player
+                async_to_sync(self.channel_layer.group_send)(
+                    self.game_group_name, {'type': 'game_message',
+                                        'contents': text_data,
+                                        'channel_name': self.channel_name,
+                                        'donotsend': True,
+                                        'bounce': False
+                                        }
+                )
         else:
             # Other user is proposing player to me
             self.send(text_data=json.dumps(text_data))
 
-    def accept_draw(self, text_data):
+    def accept_draw(self, text_data, bounce=True):
         if self.is_spectator():  # Spectator
             return
 
@@ -635,14 +639,17 @@ class GameConsumer(WebsocketConsumer):
                 self.finish_game(winner_username, draw=True, draw_reason='Draw accepted')
 
             # Send confirmation
-            text_data['just_finished'] = True
-            async_to_sync(self.channel_layer.group_send)(
-                self.game_group_name, {'type': 'game_message',
-                                       'contents': text_data,
-                                       'channel_name': self.channel_name,
-                                       'donotsend': True
-                                       }
-            )
+            if bounce:
+                text_data['just_finished'] = True
+                async_to_sync(self.channel_layer.group_send)(
+                    self.game_group_name, {'type': 'game_message',
+                                        'contents': text_data,
+                                        'channel_name': self.channel_name,
+                                        'donotsend': True,
+                                        'player_color': self.player_color,
+                                        'bounce': False
+                                        }
+                )
         else:
             # Other user is accepting draw offer
             self.send(text_data=json.dumps(text_data))
@@ -657,7 +664,7 @@ class GameConsumer(WebsocketConsumer):
                 if remaining_time <= 0.:
                     next_player_color = self.next_active_player(player_color)
                     winner_username = self.color2username[next_player_color]
-                    self.finish_game(winner_username)
+                    self.finish_game(winner_username, winner_color=next_player_color)
                     break
 
     """
@@ -692,7 +699,7 @@ class GameConsumer(WebsocketConsumer):
     """
     Rematch
     """
-    def propose_challenge(self, text_data):
+    def propose_challenge(self, text_data, bounce=True):
         if not self.is_spectator() and self.player == text_data['challenger']:
             text_data['challenger'] = self.player
 
@@ -713,18 +720,20 @@ class GameConsumer(WebsocketConsumer):
                     text_data['player_color'] = 'white'
 
                 if self.player_color == text_data['player_color']:
-                    # User proposing message to other player
-                    async_to_sync(self.channel_layer.group_send)(
-                        self.game_group_name, {'type': 'game_message',
-                                            'contents': text_data,
-                                            'channel_name': self.channel_name,
-                                            'donotsend': True}
-                    )
+                    if bounce:
+                        # User proposing message to other player
+                        async_to_sync(self.channel_layer.group_send)(
+                            self.game_group_name, {'type': 'game_message',
+                                                'contents': text_data,
+                                                'channel_name': self.channel_name,
+                                                'donotsend': True,
+                                                'bounce': False}
+                        )
                 else:  
                     # Other user is proposing player to me  
                     self.send(text_data=json.dumps(text_data))
 
-    def respond_challenge(self, text_data):
+    def respond_challenge(self, text_data, bounce=True):
         # TODO: Important game details should match between both players...
         #  (need avoid injecting e.g. different times when responding a challenge)
 
@@ -733,7 +742,7 @@ class GameConsumer(WebsocketConsumer):
         if not self.is_spectator() and text_data['response'] == 'accept':
             if self.player == text_data['challenged']:  # self.player_color == text_data['player_color']: # if self.player == text_data['challenged']:  # Challenge accepted
                 # Check that users don't have an active game.
-                if not user_has_active_game(self.player, session_key=self.session_key) and \
+                if bounce and not user_has_active_game(self.player, session_key=self.session_key) and \
                     not user_has_active_game(self.opponent_username_nonspectator, session_key=self.opponent_session_key):
                     time = int(text_data['time']) if 'time' in text_data else None
                     increment = int(text_data['increment']) if 'increment' in text_data else None
@@ -756,7 +765,8 @@ class GameConsumer(WebsocketConsumer):
                         self.game_group_name, {'type': 'game_message',
                                         'contents': text_data,
                                         'channel_name': self.channel_name,
-                                        'donotsend': True
+                                        'donotsend': True,
+                                        'bounce': False
                                         }
                     )
                     # Other user is accepting challenge
@@ -765,20 +775,21 @@ class GameConsumer(WebsocketConsumer):
                     # Other user is accepting challenge
                     self.send(text_data=json.dumps(text_data))
         elif not self.is_spectator() and text_data['response'] == 'reject':
-            if self.player_color == text_data['player_color']:  # self.player == text_data['challenged']:
+            if bounce and self.player_color == text_data['player_color']:  # self.player == text_data['challenged']:
                 # Challenge rejected
                 async_to_sync(self.channel_layer.group_send)(
                     self.game_group_name, {'type': 'game_message',
                                     'contents': text_data,
                                     'channel_name': self.channel_name,
-                                    'donotsend': True
+                                    'donotsend': True,
+                                    'bounce': False
                                     }
                 )
                 self.send(text_data=json.dumps(text_data))
             else:
                 self.send(text_data=json.dumps(text_data))
 
-    def perform_action(self, text_data, check_active_player=True, make_updates=True):
+    def perform_action(self, text_data, check_active_player=True, make_updates=True, bounce=True):
         if make_updates:
             # Check if board logic and DB are up to date
             self.game.refresh_from_db()
@@ -813,15 +824,15 @@ class GameConsumer(WebsocketConsumer):
             elif text_data['action'] == 'resign':
                 self.resign(text_data)
             elif text_data['action'] == 'draw_offer':
-                self.offer_draw(text_data)
+                self.offer_draw(text_data, bounce=bounce)
             elif text_data['action'] == 'draw_reject':
-                self.offer_draw(text_data)
+                self.offer_draw(text_data, bounce=bounce)
             elif text_data['action'] == 'draw_accept':
-                self.accept_draw(text_data)
+                self.accept_draw(text_data, bounce=bounce)
             elif text_data['action'] == 'challenge_rematch':
-                self.propose_challenge(text_data)
+                self.propose_challenge(text_data, bounce=bounce)
             elif text_data['action'] == 'challenge_response':
-                self.respond_challenge(text_data)
+                self.respond_challenge(text_data, bounce=bounce)
 
         except InvalidPlayer as e:
             print(e)
@@ -832,9 +843,13 @@ class GameConsumer(WebsocketConsumer):
         text_data = contents_dict['contents']
 
         # if self.player_color != text_data['player_color']:  # Message sent by opponents consumer
-        if self.channel_name != contents_dict['channel_name']:
+        if self.channel_name != contents_dict['channel_name']:  #  or ('player_color' in contents_dict and self.player_color != contents_dict['player_color']):
+            bounce = True
+            if 'bounce' in contents_dict:
+                bounce = contents_dict['bounce']
+            
             # Update game logic. Sending message to own player in case it has multiple consumers
-            self.perform_action(text_data, check_active_player=False, make_updates=False)
+            self.perform_action(text_data, check_active_player=False, make_updates=False, bounce=bounce)
 
         # Send message to websocket
         if not 'donotsend' in contents_dict or not contents_dict['donotsend']:
