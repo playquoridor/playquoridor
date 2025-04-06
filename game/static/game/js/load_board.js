@@ -1016,6 +1016,7 @@ function rejectChallenge(data, gameSocket) {
     listItem.remove();
     const challengeResponse = JSON.stringify({
         'action': 'challenge_response',
+        'player_color': playerColor,
         'challenger': data['challenger'],
         'challenged': data['challenged'],
         'response': 'reject'

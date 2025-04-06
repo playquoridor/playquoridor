@@ -628,6 +628,7 @@ class GameConsumer(WebsocketConsumer):
             return
 
         # User accepting draw offer from other player
+        print('Accepting draw offer...', text_data)
         if self.player_color == text_data['player_color']:
             if not self.game.ended():
                 winner_username = '-'
@@ -711,11 +712,17 @@ class GameConsumer(WebsocketConsumer):
                 else:
                     text_data['player_color'] = 'white'
 
-                async_to_sync(self.channel_layer.group_send)(
-                    self.game_group_name, {'type': 'game_message',
-                                           'contents': text_data,
-                                           'channel_name': self.channel_name}
-                )
+                if self.player_color == text_data['player_color']:
+                    # User proposing message to other player
+                    async_to_sync(self.channel_layer.group_send)(
+                        self.game_group_name, {'type': 'game_message',
+                                            'contents': text_data,
+                                            'channel_name': self.channel_name,
+                                            'donotsend': True}
+                    )
+                else:  
+                    # Other user is proposing player to me  
+                    self.send(text_data=json.dumps(text_data))
 
     def respond_challenge(self, text_data):
         # TODO: Important game details should match between both players...
@@ -723,43 +730,53 @@ class GameConsumer(WebsocketConsumer):
 
         print('Responding challenge...', text_data)
         # TODO: Check that users DON'T have active game (i.e. multiple consumers per user)
-        if not self.is_spectator() and text_data['response'] == 'accept' and self.player == text_data['challenged']:  # Challenge accepted
-            # Check that users don't have an active game.
-            if not user_has_active_game(self.player, session_key=self.session_key) and \
-                not user_has_active_game(self.opponent_username_nonspectator, session_key=self.opponent_session_key):
-                time = int(text_data['time']) if 'time' in text_data else None
-                increment = int(text_data['increment']) if 'increment' in text_data else None
-                rated = bool(text_data['rated']) if 'rated' in text_data else True
-                print('CREATING GAME', self.player, 'CH', text_data['challenger'])
-                assert self.player != text_data['challenger']
-                game = create_game(player_username=self.player,
-                                opponent_username=text_data['challenger'],  # opponent_username_nonspectator?
-                                player_color=text_data['player_color'],
-                                time=time,
-                                increment=increment,
-                                rated=rated,
-                                player_session_key=self.session_key,
-                                opponent_session_key=self.opponent_session_key,
-                                )
-                text_data['game_id'] = game.game_id
+        if not self.is_spectator() and text_data['response'] == 'accept':
+            if self.player == text_data['challenged']:  # self.player_color == text_data['player_color']: # if self.player == text_data['challenged']:  # Challenge accepted
+                # Check that users don't have an active game.
+                if not user_has_active_game(self.player, session_key=self.session_key) and \
+                    not user_has_active_game(self.opponent_username_nonspectator, session_key=self.opponent_session_key):
+                    time = int(text_data['time']) if 'time' in text_data else None
+                    increment = int(text_data['increment']) if 'increment' in text_data else None
+                    rated = bool(text_data['rated']) if 'rated' in text_data else True
+                    assert self.player != text_data['challenger'] or self.session_key != self.opponent_session_key
+                    game = create_game(player_username=self.player,
+                                    opponent_username=text_data['challenger'],  # opponent_username_nonspectator?
+                                    player_color=text_data['player_color'],
+                                    time=time,
+                                    increment=increment,
+                                    rated=rated,
+                                    player_session_key=self.session_key,
+                                    opponent_session_key=self.opponent_session_key,
+                                    )
+                    text_data['game_id'] = game.game_id
 
-                print('Sending back challenge response to all users...', self.player, text_data)
-
-                # if self.player == text_data['challenger'] and (self.player != 'anonymous' or self.session_key == self.player_session_key):  # TODO: Session key anonymous
+                    print('Sending back challenge response to all users...', self.player, text_data)
+                    
+                    async_to_sync(self.channel_layer.group_send)(
+                        self.game_group_name, {'type': 'game_message',
+                                        'contents': text_data,
+                                        'channel_name': self.channel_name,
+                                        'donotsend': True
+                                        }
+                    )
+                    # Other user is accepting challenge
+                    self.send(text_data=json.dumps(text_data))
+                else:
+                    # Other user is accepting challenge
+                    self.send(text_data=json.dumps(text_data))
+        elif not self.is_spectator() and text_data['response'] == 'reject':
+            if self.player_color == text_data['player_color']:  # self.player == text_data['challenged']:
+                # Challenge rejected
                 async_to_sync(self.channel_layer.group_send)(
                     self.game_group_name, {'type': 'game_message',
                                     'contents': text_data,
-                                    'channel_name': self.channel_name
+                                    'channel_name': self.channel_name,
+                                    'donotsend': True
                                     }
                 )
-        elif not self.is_spectator() and text_data['response'] == 'reject' and self.player == text_data['challenged']:
-            # if self.player == text_data['challenger'] and (self.player != 'anonymous' or self.session_key == self.player_session_key):  # TODO: Session key anonymous
-                async_to_sync(self.channel_layer.group_send)(
-                    self.game_group_name, {'type': 'game_message',
-                                    'contents': text_data,
-                                    'channel_name': self.channel_name
-                                    }
-                )
+                self.send(text_data=json.dumps(text_data))
+            else:
+                self.send(text_data=json.dumps(text_data))
 
     def perform_action(self, text_data, check_active_player=True, make_updates=True):
         if make_updates:
@@ -811,9 +828,8 @@ class GameConsumer(WebsocketConsumer):
 
     def game_message(self, contents_dict):
         # Receive message from group
-        # print(self.player_color, ': message received from group: ', contents_dict)
+        print(self.player_color, ': message received from group: ', contents_dict)
         text_data = contents_dict['contents']
-        print('GAME message', text_data, 'channel_name', self.channel_name)
 
         # if self.player_color != text_data['player_color']:  # Message sent by opponents consumer
         if self.channel_name != contents_dict['channel_name']:
