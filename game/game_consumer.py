@@ -732,6 +732,9 @@ class GameConsumer(WebsocketConsumer):
                 else:  
                     # Other user is proposing player to me  
                     self.send(text_data=json.dumps(text_data))
+        elif not self.is_spectator():  
+            # Other user is proposing player to me  
+            self.send(text_data=json.dumps(text_data))
 
     def respond_challenge(self, text_data, bounce=True):
         # TODO: Important game details should match between both players...
@@ -769,11 +772,8 @@ class GameConsumer(WebsocketConsumer):
                                         'bounce': False
                                         }
                     )
-                    # Other user is accepting challenge
-                    self.send(text_data=json.dumps(text_data))
-                else:
-                    # Other user is accepting challenge
-                    self.send(text_data=json.dumps(text_data))
+            # Other user is accepting challenge
+            self.send(text_data=json.dumps(text_data))
         elif not self.is_spectator() and text_data['response'] == 'reject':
             if bounce and self.player_color == text_data['player_color']:  # self.player == text_data['challenged']:
                 # Challenge rejected
