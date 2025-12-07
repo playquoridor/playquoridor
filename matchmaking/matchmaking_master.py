@@ -11,6 +11,7 @@ from collections import defaultdict
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quoridor.settings")
 import django
+from django.db import connection
 
 django.setup()
 
@@ -93,6 +94,7 @@ def removed_from_pool_message(client):
 
 def handle_match(client_1, client_2, time, increment, rated=True):
     print('Handling match...', client_1, client_2)
+    connection.ensure_connection()
 
     # TODO: Check if there's a history of games between the two players, and choose color accordingly?
     game = create_game(client_1['username'],
@@ -203,6 +205,7 @@ def match_client(client, patience=5):
         # TODO: This is really hacky... Spawns a thread to automatically remove client after 5 seconds
         # threading.Thread(target=remove_from_pool_logic, args=(client,)).start()
         timer = threading.Timer(patience, remove_from_pool_logic, args=(client, False))
+        timer.daemon = True
         timer.start()
 
 
@@ -268,6 +271,7 @@ def match_client_anonymous(client, patience=5):
         connected_anonymous_keys_set.add(client['session_key'])  # Store anonymous key so that it cannot be added twice / play again themselves
         
         timer = threading.Timer(patience, remove_from_pool_logic, args=(client, True))
+        timer.daemon = True
         timer.start()
 
 def remove_client_anonymous(client):
