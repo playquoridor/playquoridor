@@ -13,6 +13,7 @@ import asyncio
 # Setup Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quoridor.settings")
 import django
+from django.db import connection
 
 django.setup()
 from game.game_utils import create_game, has_active_game
@@ -219,6 +220,7 @@ if __name__ == '__main__':
 
         # Retrieve users from database corresponding to bot username set
         available_bot_uds = []
+        connection.ensure_connection()
         if bot_username is not None:
             print('REQUESTED SPECIFIC bot username:', bot_username)
             if not has_active_game(bot_username):
