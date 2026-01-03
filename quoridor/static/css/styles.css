@@ -363,7 +363,7 @@ input.input-tab, section.section-tab{
     clear: both;
     display: none;
     padding-top: 10px;
-    max-height: 270px;
+    max-height: 350px;
     overflow-y: auto; 
 }
 
