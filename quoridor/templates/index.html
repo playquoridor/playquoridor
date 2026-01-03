@@ -71,20 +71,34 @@
                 </div>
             {% endif %}
 
-            {% include "include/online_users.html" %}
+            <!-- Show online users if online_users_count is greater than 1 -->
 
-            {% if top_active_game_exists and not top_active_game_ismine %}
-            <div class="sub-container">
-                <div class='displayed-game' id="game-{{ top_active_game.game_id }}">
-                    <div class="title">
-                        Top rated game
-                    </div>
-                    {% include "game/include/static_game.html" with game=top_active_game player=top_active_game_player opponent=top_active_game_opponent player_username=top_active_game_player_username opponent_username=top_active_game_opponent_username %}
-                </div>
-            </div>
+            {% if online_users_count > 1 %}
+                {% include "include/online_users.html" %}
             {% else %}
                 {% include "include/leaderboard.html" %}
             {% endif %}
+            
+            <div class="sub-container">
+            {% if top_active_game_exists %}
+            <div class='displayed-game' id="game-{{ top_active_game.game_id }}">
+                <div class="title">
+                    Top rated game
+                </div>
+                {% include "game/include/static_game.html" with game=top_active_game player=top_active_game_player opponent=top_active_game_opponent %}
+            </div>
+            {% else %}
+            <div class='displayed-game' id="game-{{ latest_game.game_id }}">
+                <div class="title">
+                    Latest game
+                </div>
+                {% include "game/include/static_game.html" with game=latest_game player=latest_game_player opponent=latest_game_opponent %}
+                <div class="date">
+                    {{ latest_game.game_time }}
+                </div>
+            </div>
+            {% endif %}
+            </div>
         </div>
 
         <div class="justify small-font gray-text"> <!-- small-padding -->

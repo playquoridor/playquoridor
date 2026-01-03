@@ -103,6 +103,29 @@ def top_game_context(request, active_game_id=None):
     return context
 
 
+def latest_game_context(request):
+    # TODO: Consider using cache
+    context = {}
+
+    try:
+        latest_game = QuoridorGame.objects.filter(abort=False, move_number__gt=1).latest('game_time')
+        game = latest_game
+
+        # Add game details to context
+        player_set = game.player_set.all()
+        player = player_set[0]
+        opponent = player_set[1]
+        context = {
+            'latest_game_exists': True,
+            'latest_game': game,
+            'latest_game_id': game.game_id,
+            'latest_game_player': player,
+            'latest_game_opponent': opponent,
+        }
+    except QuoridorGame.DoesNotExist:
+        context = {}
+    return context
+
 def leaderboard_context(request, k=50):
     # top_rated_user_details = UserDetails.objects.filter(user__is_active=True).order_by('standard_rating')[::-1][:k]
     if len(Rating.objects.all()) == 0:
@@ -159,13 +182,17 @@ def index(request):
     context = {**context,
                **leaderboard_context(request),
                **top_game_context(request, active_game_id),
+               **latest_game_context(request),
                **online_users_context(request)}
     return render(request, 'index.html', context)
 
 def community(request):
-    context = active_game_context(request)
     context = {}
     return render(request, 'community.html', context)
+
+def leaderboard(request):
+    context = {**leaderboard_context(request, k=100)}
+    return render(request, 'leaderboard.html', context)
 
 #####################
 #    Error pages    #
